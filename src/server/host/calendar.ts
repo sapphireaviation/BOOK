@@ -72,6 +72,6 @@ export async function updateCalendarRange(actor: Actor, listingId: string, unitI
         .onConflictDoUpdate({ target: [unitInventory.unitId, unitInventory.date], set: plan.set });
     }
   });
-  if (listing.status === "published") revalidateListing(listingId);
+  if (listing.status === "published") await revalidateListing(listingId);
   return { days: dates.length };
 }

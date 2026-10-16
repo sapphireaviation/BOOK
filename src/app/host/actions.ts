@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { updateTag } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/components/host/action-state";
 import { formatMoney } from "@/lib/money";
@@ -39,12 +38,6 @@ const empty = z.object({});
 const listingId = z.string().regex(/^lst_[a-z0-9]+$/);
 const childId = z.string().regex(/^[a-z]{3}_[a-z0-9]+$/);
 
-/** Public pages read listings through cache tags; the host should see their own change at once. */
-function expireListing(id: string) {
-  updateTag(`listing:${id}`);
-  updateTag("listings");
-}
-
 export async function startHosting(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const result = await runAction({
     roles: ["traveler", "host", "admin"],
@@ -81,7 +74,6 @@ export async function saveBasics(id: string, _prev: ActionState, formData: FormD
     ok: "Basics saved",
     run: async (actor, input) => {
       await updateBasics(actor, id, input);
-      expireListing(id);
     },
   });
 }
@@ -94,7 +86,6 @@ export async function saveLocation(id: string, _prev: ActionState, formData: For
     ok: "Location saved",
     run: async (actor, input) => {
       await updateLocation(actor, id, input);
-      expireListing(id);
     },
   });
 }
@@ -108,7 +99,6 @@ export async function saveAmenities(id: string, _prev: ActionState, formData: Fo
     ok: "Amenities saved",
     run: async (actor, input) => {
       await updateAmenities(actor, id, input);
-      expireListing(id);
     },
   });
 }
@@ -121,7 +111,6 @@ export async function savePolicies(id: string, _prev: ActionState, formData: For
     ok: "Policies saved",
     run: async (actor, input) => {
       await updatePolicies(actor, id, input);
-      expireListing(id);
     },
   });
 }
@@ -134,7 +123,6 @@ export async function saveCurrency(id: string, _prev: ActionState, formData: For
     ok: "Currency changed",
     run: async (actor, input) => {
       await updateCurrency(actor, id, input);
-      expireListing(id);
       return `Currency changed to ${input.currency}`;
     },
   });
@@ -150,7 +138,6 @@ export async function saveUnit(id: string, unitId: string | null, _prev: ActionS
     run: async (actor, input) => {
       if (unitId) await updateUnit(actor, id, unitId, input);
       else await createUnit(actor, id, input);
-      expireListing(id);
     },
   });
 }
@@ -164,7 +151,6 @@ export async function removeUnit(id: string, unitId: string, _prev: ActionState,
     ok: "Room deleted",
     run: async (actor) => {
       await deleteUnit(actor, id, unitId);
-      expireListing(id);
     },
   });
 }
@@ -178,7 +164,6 @@ export async function savePhotoAlt(id: string, photoId: string, _prev: ActionSta
     ok: "Description saved",
     run: async (actor, input) => {
       await updatePhotoAlt(actor, id, photoId, input.alt);
-      expireListing(id);
     },
   });
 }
@@ -194,7 +179,6 @@ export async function arrangePhoto(id: string, photoId: string, _prev: ActionSta
     ok: "Photo moved",
     run: async (actor, input) => {
       await movePhoto(actor, id, photoId, input.direction);
-      expireListing(id);
       return input.direction === "first" ? "Photo moved to cover" : "Photo moved";
     },
   });
@@ -209,7 +193,6 @@ export async function removePhoto(id: string, photoId: string, _prev: ActionStat
     ok: "Photo deleted",
     run: async (actor) => {
       await deletePhoto(actor, id, photoId);
-      expireListing(id);
     },
   });
 }
@@ -254,7 +237,6 @@ export async function setPublished(id: string, _prev: ActionState, formData: For
     run: async (actor, input) => {
       if (input.intent === "publish") await publishListing(actor, id);
       else await unpublishListing(actor, id);
-      expireListing(id);
       return input.intent === "publish" ? "Listing published" : "Listing unpublished";
     },
   });

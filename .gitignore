@@ -43,3 +43,6 @@ next-env.d.ts
 # allow the example env file
 !.env.example
 .claude/settings.local.json
+
+# local listing photo uploads (development fallback)
+/public/uploads/

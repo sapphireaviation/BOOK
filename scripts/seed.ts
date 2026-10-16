@@ -20,7 +20,7 @@ async function main() {
   const demo = process.argv.includes("--demo");
   if (demo && process.env.NODE_ENV === "production") throw new Error("Refusing to seed demo listings in production.");
 
-  const client = postgres(url, { prepare: false, max: 1 });
+  const client = postgres(url, { prepare: false, max_pipeline: 0, max: 1 });
   const db = drizzle(client, { schema, casing: "snake_case" });
   try {
     await seedAirports(db, { refresh: !process.argv.includes("--offline") });

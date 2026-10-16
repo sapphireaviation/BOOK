@@ -18,7 +18,7 @@ async function main() {
     console.error("DATABASE_URL is not set. Pass --env-file=.env.local or export it.");
     process.exit(1);
   }
-  const sql = postgres(url, { prepare: false, max: 1 });
+  const sql = postgres(url, { prepare: false, max_pipeline: 0, max: 1 });
   try {
     const found = await sql<{ id: string; role: string }[]>`select id, role from booking."user" where lower(email) = ${email} limit 1`;
     if (!found.length) {

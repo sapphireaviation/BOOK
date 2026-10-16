@@ -266,7 +266,7 @@ if (isMain) {
     const postgres = (await import("postgres")).default;
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set");
-    const client = postgres(url, { prepare: false, max: 1 });
+    const client = postgres(url, { prepare: false, max_pipeline: 0, max: 1 });
     try {
       await seedAirports(drizzle(client, { casing: "snake_case" }), { refresh: !process.argv.includes("--offline") });
     } finally {

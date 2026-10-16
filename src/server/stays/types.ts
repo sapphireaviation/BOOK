@@ -48,6 +48,9 @@ export type StayCard = {
   perNight: number;
   nights: number;
   unitId: string;
+  /** Distance from the searched place in km, when the place has coordinates. */
+  distanceKm: number | null;
+  isDemo: boolean;
 };
 
 export type StaySearchResult = {
@@ -57,7 +60,30 @@ export type StaySearchResult = {
   page: number;
   pageSize: number;
   /** Counts for filter facets, computed before price and type filters are applied. */
-  facets: { types: Record<string, number>; priceMin: number; priceMax: number };
+  facets: { types: Record<string, number>; priceMin: number; priceMax: number; currency: string | null };
 };
 
 export type PlaceSuggestion = { slug: string; name: string; region: string | null; countryName: string; listingCount: number };
+
+/** Inputs to the pure pricing function, loaded from the database by `quoteStay`. */
+export type PricingListing = {
+  status: string;
+  kind: string;
+  currency: string;
+  cleaningFee: number;
+  taxBps: number;
+  minNights: number;
+  maxNights: number;
+};
+
+export type PricingUnit = {
+  active: boolean;
+  maxGuests: number;
+  basePrice: number;
+  extraGuestPrice: number;
+  includedGuests: number;
+  quantity: number;
+};
+
+/** One `unit_inventory` row. Nights without a row use the unit defaults. */
+export type InventoryNight = { date: string; booked: number; total: number | null; price: number | null; closed: boolean };

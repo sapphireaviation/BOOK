@@ -83,6 +83,8 @@ export const listings = pgTable(
     ratingAvg: real("rating_avg").notNull().default(0),
     ratingCount: integer("rating_count").notNull().default(0),
     verified: boolean("verified").notNull().default(false),
+    /** Sample data created by the demo seed. Shown with a "Sample listing" badge and never bookable in production. */
+    isDemo: boolean("is_demo").notNull().default(false),
 
     publishedAt: timestamp("published_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

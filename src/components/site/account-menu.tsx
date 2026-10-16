@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export function AccountMenu() {
   const { data, isPending } = useSession();
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +65,9 @@ export function AccountMenu() {
             className="block w-full px-3 py-2 text-left text-sm hover:bg-mist"
             onClick={async () => {
               await signOut();
-              window.location.href = "/";
+              setOpen(false);
+              router.push("/");
+              router.refresh();
             }}
           >
             Sign out

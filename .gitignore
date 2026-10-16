@@ -44,3 +44,6 @@ next-env.d.ts
 !.env.example
 .claude/settings.local.json
 .claude/worktrees/
+
+# local listing photo uploads (development fallback)
+/public/uploads/

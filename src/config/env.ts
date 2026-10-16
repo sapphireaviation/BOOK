@@ -32,6 +32,8 @@ const schema = z.object({
   ANTHROPIC_MODEL: z.string().default("claude-haiku-5-5"),
 
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  /** Comma separated emails promoted to admin when they open a host or admin page. */
+  ADMIN_EMAILS: z.string().optional(),
   INDEXNOW_KEY: z.string().optional(),
   CRON_SECRET: z.string().optional(),
 });

@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { headers } from "next/headers";
+import { connection } from "next/server";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { site } from "@/config/site";
@@ -69,6 +70,8 @@ export type Role = "traveler" | "host" | "admin";
 
 /** Current session or null. Reads cookies, so call it inside a Suspense boundary. */
 export async function getSession() {
+  // Better Auth reads the clock to check expiry, so this must run at request time, never in a prerender.
+  await connection();
   return auth.api.getSession({ headers: await headers() });
 }
 

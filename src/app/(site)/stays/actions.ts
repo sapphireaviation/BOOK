@@ -84,6 +84,7 @@ const bookingErrorMessages: Record<BookingError["code"], string> = {
   invalid: "Some booking details are not valid. Check the dates and guests, then try again.",
   not_found: "This place is no longer taking bookings.",
   forbidden: "This account cannot book this place. Sign in with another account or contact support.",
+  rate_limited: "Too many booking attempts from this connection. Wait a minute and try again.",
   not_configured: "Bookings cannot be paid for right now because payments are not set up. Nothing was charged.",
 };
 

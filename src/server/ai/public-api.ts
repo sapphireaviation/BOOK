@@ -144,8 +144,7 @@ export async function searchStaysPublic(input: Record<string, unknown>, source: 
 // ---------------------------------------------------------------------------
 // Flights
 
-function offerOut(offer: Offer, params?: FlightSearch) {
-  const searchPath = params ? flightSearchPath(params) : "/flights";
+function offerOut(offer: Offer) {
   return {
     id: offer.id,
     airline: `${offer.owner.name} (${offer.owner.iata})`,
@@ -197,7 +196,7 @@ export async function searchFlightsPublic(input: Record<string, unknown>, source
         query: params,
         ...(parsed ? { understood: parsed.understood } : {}),
         count: result.offers.length,
-        offers: result.offers.slice(0, Math.max(1, Math.min(50, limit))).map((o) => offerOut(o, params)),
+        offers: result.offers.slice(0, Math.max(1, Math.min(50, limit))).map((o) => offerOut(o)),
         searchUrl: absoluteUrl(flightSearchPath(params)),
         note: `${FEE_NOTE} Fares change often; offers expire at the time shown.`,
       },

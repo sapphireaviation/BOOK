@@ -19,7 +19,7 @@ function headline(detail: BookingDetail) {
   const what = stay ? stay.listing.title : `${flight!.origin} to ${flight!.destination}`;
   switch (booking.status) {
     case "confirmed":
-      return stay ? "Your stay is booked" : flight!.airlineReference ? `Your flight ${what} is booked` : `Payment received for ${what}`;
+      return stay ? "Your stay is booked" : flight!.airlineReference ? "Your flight is booked" : `Payment received for ${what}`;
     case "completed":
       return stay ? `Your stay at ${what}` : `Your flight ${what}`;
     case "pending_payment":
@@ -183,8 +183,8 @@ export function BookingDetailView({
           </h2>
           {stay && (
             <p className="mt-2 max-w-prose text-sm">
-              <span className="font-semibold">{policyLabel(stay.cancellationPolicy)}.</span> {policySummary(stay.cancellationPolicy)} Check in counts from{" "}
-              {stay.listing.checkInFrom.slice(0, 5)} on {longDay(stay.checkIn)}.
+              <span className="font-semibold">{policyLabel(stay.cancellationPolicy)}.</span> {policySummary(stay.cancellationPolicy)} The days count back from
+              check in at {stay.listing.checkInFrom.slice(0, 5)} on {longDay(stay.checkIn)}.
             </p>
           )}
           {flight && cancel && <p className="mt-2 max-w-prose text-sm">{cancel.policy}. The airline&apos;s fare rules decide any refund.</p>}

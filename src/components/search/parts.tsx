@@ -159,7 +159,7 @@ export function TripType({ oneWay, onChange, size = "md" }: { oneWay: boolean; o
           onClick={() => onChange(o.value)}
           className={cn(
             "rounded-[6px] font-semibold transition-colors duration-150",
-            size === "sm" ? "h-9 px-3 text-sm" : "h-10 px-4 text-sm",
+            size === "sm" ? "h-10 px-3 text-sm" : "h-10 px-4 text-sm",
             oneWay === o.value ? "bg-ink text-paper" : "text-slate hover:text-ink",
           )}
         >

@@ -129,7 +129,7 @@ async function PlaceContent({ params }: { params: Params }) {
           <nav aria-label="Breadcrumb" className="text-sm text-slate">
             <ol className="flex flex-wrap gap-x-2">
               <li>
-                <Link href="/stays" className="hover:text-ink">
+                <Link href="/stays" className="tap hover:text-ink">
                   Stays
                 </Link>
                 <span aria-hidden="true" className="ml-2">

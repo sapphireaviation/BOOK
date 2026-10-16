@@ -269,22 +269,25 @@ async function UnknownPlace({ place }: { place: string }) {
   const suggestions = await suggestPlaces(place.split(",")[0], 6).catch(() => []);
   const fallback = suggestions.length ? suggestions : await suggestPlaces("", 8).catch(() => []);
   return (
-    <div className="mt-6">
-      <EmptyState title={`We could not find "${place}"`}>
-        Check the spelling, or pick one of these places.
-      </EmptyState>
-      {fallback.length > 0 && (
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {fallback.map((s) => (
-            <li key={s.slug}>
-              <Link href={`/stays/${s.slug}`} className="inline-flex h-10 items-center rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold hover:border-ink">
-                {s.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <EmptyState
+      className="border-t-0 pt-8"
+      title={`We could not find "${place}"`}
+      action={
+        fallback.length > 0 ? (
+          <ul className="flex flex-wrap gap-2">
+            {fallback.map((s) => (
+              <li key={s.slug}>
+                <Link href={`/stays/${s.slug}`} className="inline-flex h-10 items-center rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold hover:border-ink">
+                  {s.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : undefined
+      }
+    >
+      Check the spelling, or pick one of these places.
+    </EmptyState>
   );
 }
 
@@ -293,6 +296,7 @@ async function MissingInput({ raw, issues }: { raw: Record<string, string>; issu
   return (
     <div className="mt-6">
       <EmptyState
+        className="border-t-0 pt-2"
         title={raw.place ? "Add your dates to see prices" : "Where are you going?"}
         action={
           place?.slug ? (

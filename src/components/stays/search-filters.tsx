@@ -66,7 +66,7 @@ export function SearchFilters({
       <Hidden params={params} />
       <AutoSubmit className="flex flex-wrap items-end justify-between gap-3">
         <p className="text-sm text-slate" role="status">
-          {total === 1 ? "1 stay" : `${total.toLocaleString("en-IN")} stays`} free for your dates
+          {total === 0 ? "No stays" : total === 1 ? "1 stay" : `${total.toLocaleString("en-IN")} stays`} available for your dates
         </p>
         <label className="flex items-center gap-2 text-sm font-semibold">
           Sort
@@ -80,7 +80,7 @@ export function SearchFilters({
         </label>
       </AutoSubmit>
 
-      <details className="group mt-3" open={active > 0}>
+      <details className="group mt-3">
         <summary className="inline-flex h-10 cursor-pointer list-none items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold hover:border-ink [&::-webkit-details-marker]:hidden">
           {active ? `Filters (${active})` : "Filters"}
           <svg viewBox="0 0 16 16" className="size-3.5 transition-transform duration-150 group-open:rotate-180" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8">

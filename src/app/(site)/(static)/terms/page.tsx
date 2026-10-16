@@ -25,7 +25,7 @@ export default function TermsPage() {
         <h2>1. What we do</h2>
         <p>
           {site.name} is a marketplace. For flights, we sell tickets on behalf of airlines at the airline&apos;s fare; the airline operates the flight
-          and its conditions of carriage apply to your journey. For stays, the host offers the place and the contract for the stay is between the guest and
+          and its conditions of carriage apply to your trip. For stays, the host offers the place and the contract for the stay is between the guest and
           the host; we provide the listing, the booking system and payment collection.
         </p>
         <p>We charge travelers no platform fee and charge hosts no commission. Every price breakdown shows a platform fee of 0.</p>

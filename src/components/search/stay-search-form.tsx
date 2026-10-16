@@ -203,6 +203,7 @@ export function StaySearchForm({ initial, layout = "bar" }: { initial?: Partial<
             error={errors.checkin ?? errors.checkout}
             errorId={errorId(errors.checkin ? "checkin" : "checkout")}
             onClick={() => pickers.toggle("checkin")}
+            className="col-span-2 sm:col-span-1"
           />
           <BarField
             ref={pickers.anchor("guests")}
@@ -213,6 +214,7 @@ export function StaySearchForm({ initial, layout = "bar" }: { initial?: Partial<
             error={guestError}
             errorId={errorId(guestErrorField)}
             onClick={() => pickers.toggle("guests")}
+            className="col-span-2 sm:col-span-1"
           />
           <Button type="submit" className="col-span-2 h-auto min-h-12 lg:col-span-1">
             Search stays

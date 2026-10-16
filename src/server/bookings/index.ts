@@ -8,6 +8,8 @@ import { newId, newReference, newToken } from "@/lib/id";
 import { getFlightProvider, getOffer } from "@/server/flights";
 import { OfferExpiredError, type Offer } from "@/server/flights/types";
 import { holdInventory, quoteStay } from "@/server/stays/inventory";
+import { headers } from "next/headers";
+import { clientIp, consume, policies } from "@/server/rate-limit";
 import { expireHoldsForUnit } from "./expiry";
 import type { Tx } from "./transitions";
 import { BookingError, type CreatedBooking, type CreateFlightBookingInput, type CreateStayBookingInput } from "./types";
@@ -127,6 +129,7 @@ async function withRetry<T>(fn: () => Promise<T>) {
  * (/checkout/<bookingId>?token=<accessToken>). Throws BookingError.
  */
 export async function createStayBooking(input: CreateStayBookingInput): Promise<CreatedBooking> {
+  await limitBookingAttempts();
   const parsed = staySchema.safeParse(input);
   if (!parsed.success) invalid(parsed.error);
   const v = parsed.data;
@@ -245,6 +248,7 @@ function airlineTime(local: string) {
  * with status "pending_payment". The airline order is created only after payment is captured.
  */
 export async function createFlightBooking(input: CreateFlightBookingInput): Promise<CreatedBooking> {
+  await limitBookingAttempts();
   const parsed = flightSchema.safeParse(input);
   if (!parsed.success) invalid(parsed.error);
   const v = parsed.data;
@@ -312,4 +316,19 @@ export async function createFlightBooking(input: CreateFlightBookingInput): Prom
     return ref;
   });
   return { bookingId: id, reference, accessToken, payUrl: payUrl(id, accessToken) };
+}
+
+/**
+ * Caps booking attempts per IP so nobody can hold all of a listing's inventory with
+ * throwaway bookings. Outside a request (scripts, tests) there are no headers and no limit.
+ */
+async function limitBookingAttempts() {
+  let h: Headers;
+  try {
+    h = await headers();
+  } catch {
+    return;
+  }
+  const r = await consume(`booking:${clientIp(h)}`, policies.booking);
+  if (!r.ok) throw new BookingError("rate_limited", `Too many booking attempts. Try again in ${r.retryAfter} seconds.`);
 }

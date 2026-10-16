@@ -30,6 +30,7 @@ const bookingErrorMessages: Record<BookingError["code"], string> = {
   invalid: "Some booking details were not accepted. Check them and try again.",
   not_found: "We could not find this fare. Search again to see current fares.",
   forbidden: "Sign in to book this fare.",
+  rate_limited: "Too many booking attempts from this connection. Wait a minute and try again.",
   not_configured: "Online payment is not set up yet, so flights cannot be booked right now. Nothing has been charged.",
 };
 

@@ -26,7 +26,7 @@ export type CreatedBooking = { bookingId: string; reference: string; accessToken
 
 export class BookingError extends Error {
   constructor(
-    public readonly code: "unavailable" | "price_changed" | "offer_expired" | "invalid" | "not_found" | "forbidden" | "not_configured",
+    public readonly code: "unavailable" | "price_changed" | "offer_expired" | "invalid" | "not_found" | "forbidden" | "not_configured" | "rate_limited",
     message: string,
   ) {
     super(message);

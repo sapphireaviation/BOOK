@@ -168,7 +168,7 @@ function offerOut(offer: Offer, params?: FlightSearch) {
     checkedBags: offer.conditions.checkedBags ?? null,
     cabinBags: offer.conditions.cabinBags ?? null,
     expiresAt: offer.expiresAt,
-    bookUrl: absoluteUrl(`${searchPath}${searchPath.includes("?") ? "&" : "?"}offer=${encodeURIComponent(offer.id)}`),
+    bookUrl: absoluteUrl(`/flights/offer/${encodeURIComponent(offer.id)}`),
   };
 }
 

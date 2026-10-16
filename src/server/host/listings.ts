@@ -1,9 +1,11 @@
 import "server-only";
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { and, asc, count, desc, eq, inArray, like, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { destinations, hostProfiles, listingPhotos, listings, listingUnits, unitInventory, user } from "@/db/schema";
-import { site } from "@/config/site";
+import { absoluteUrl, site } from "@/config/site";
+import { pingIndexNow } from "@/server/seo/indexnow";
 import { newId } from "@/lib/id";
 import { AccessError } from "./access";
 import { ValidationError } from "./errors";
@@ -158,6 +160,15 @@ export async function syncListing(listingId: string, opts: { revalidate?: boolea
 export function revalidateListing(listingId: string) {
   revalidateTag(`listing:${listingId}`, "max");
   revalidateTag("listings", "max");
+  // Tell search engines about the change once the response is sent.
+  after(async () => {
+    const [row] = await db
+      .select({ slug: listings.slug, destinationSlug: listings.destinationSlug, status: listings.status })
+      .from(listings)
+      .where(eq(listings.id, listingId));
+    if (!row?.destinationSlug || row.slug.startsWith("draft-")) return;
+    await pingIndexNow([absoluteUrl(`/stays/${row.destinationSlug}/${row.slug}`), absoluteUrl(`/stays/${row.destinationSlug}`)]);
+  });
 }
 
 async function uniqueSlug(l: Pick<ListingRow, "id" | "title" | "city" | "slug">) {

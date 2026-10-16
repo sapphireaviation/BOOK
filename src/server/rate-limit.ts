@@ -33,6 +33,8 @@ export const policies = {
   mcp: { capacity: 60, refillPerSecond: 1 },
   /** Natural language parsing on the site. */
   search: { capacity: 20, refillPerSecond: 0.5 },
+  /** Creating bookings (each one holds inventory for 20 minutes). */
+  booking: { capacity: 8, refillPerSecond: 0.02 },
   /** Account changes such as password and deletion. */
   account: { capacity: 10, refillPerSecond: 0.05 },
 } satisfies Record<string, BucketPolicy>;

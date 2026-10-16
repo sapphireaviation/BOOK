@@ -62,7 +62,7 @@ export function StaticPage({
 /** Long form text with the site's link and list styles. */
 export function Prose({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-w-[70ch] [&_a]:text-sapphire [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-sapphire-deep [&_h2]:mt-10 [&_h2]:text-2xl [&_h3]:mt-6 [&_h3]:text-lg [&_li]:mt-1.5 [&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-3 [&_strong]:font-bold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-6">
+    <div className="max-w-[70ch] [overflow-wrap:anywhere] [&_a]:text-sapphire [&_a]:underline [&_a]:underline-offset-[3px] [&_a:hover]:text-sapphire-deep [&_h2]:mt-10 [&_h2]:text-2xl [&_h3]:mt-6 [&_h3]:text-lg [&_li]:mt-1.5 [&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-3 [&_strong]:font-bold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-6">
       {children}
     </div>
   );

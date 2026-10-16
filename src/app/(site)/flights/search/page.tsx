@@ -137,7 +137,7 @@ async function SearchContent({ searchParams }: { searchParams: Promise<SP> }) {
 
   const search = parsed.data;
   const heading = (
-    <div className="mt-6 flex flex-wrap items-center gap-3">
+    <div className="mt-8 flex flex-wrap items-center gap-3">
       <h1 className="text-3xl">
         {cityOf(search.from)} to {cityOf(search.to)}
       </h1>
@@ -186,7 +186,7 @@ async function SearchContent({ searchParams }: { searchParams: Promise<SP> }) {
   return (
     <>
       {bar}
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <div className="mt-8 flex flex-wrap items-center gap-3">
         <h1 className="text-3xl">
           {cityOf(search.from)} to {cityOf(search.to)}
         </h1>
@@ -207,9 +207,9 @@ async function SearchContent({ searchParams }: { searchParams: Promise<SP> }) {
             <h2 id="results-heading" className="sr-only">
               Results
             </h2>
-            <details className="mb-4 rounded-md border border-line bg-surface p-4 md:hidden">
-              <summary className="cursor-pointer text-sm font-semibold">Filters</summary>
-              <div className="mt-4">
+            <details className="mb-4 rounded-md border border-line bg-surface md:hidden">
+              <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Filters</summary>
+              <div className="border-t border-line p-4">
                 <ResultFilters search={search} facets={facets} currency={result.currency} priceSteps={steps} idPrefix="sheet" />
               </div>
             </details>
@@ -261,7 +261,7 @@ function NoFlights({ search, today }: { search: FlightSearch; today: string }) {
             <li key={d.depart}>
               <Link
                 href={searchHref({ ...tripParams(search), depart: d.depart, return: d.return })}
-                className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-ink"
+                className="inline-flex h-10 items-center rounded-md border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-ink"
               >
                 {formatDay(d.depart)}
                 {d.return ? ` to ${formatDay(d.return)}` : ""}

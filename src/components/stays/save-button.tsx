@@ -45,7 +45,7 @@ export function SaveButton({
         aria-label={showLabel ? undefined : optimistic ? `Remove ${title} from saved stays` : `Save ${title}`}
         aria-busy={pending || undefined}
         className={cn(
-          "inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-2.5 text-sm font-semibold transition-colors duration-150 hover:border-ink",
+          "inline-flex h-10 items-center gap-2 rounded-md border border-line bg-surface px-2.5 text-sm font-semibold transition-colors duration-150 hover:border-ink",
           optimistic ? "text-signal" : "text-ink",
         )}
       >

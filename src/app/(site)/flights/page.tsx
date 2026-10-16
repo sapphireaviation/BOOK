@@ -29,8 +29,8 @@ export default function FlightsPage() {
   return (
     <>
       <section className="border-b border-line">
-        <div className="container-page py-12 md:py-16">
-          <h1 className="max-w-3xl text-4xl md:text-5xl">Flights at the airline&apos;s own fare</h1>
+        <div className="container-page py-12 lg:py-16">
+          <h1 className="max-w-3xl text-3xl lg:text-4xl">Flights at the airline&apos;s own fare</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate">
             We search airlines directly. The price you see is the fare, taxes and airline fees, and our platform fee is 0.
           </p>
@@ -91,11 +91,11 @@ async function PopularRoutes() {
   );
 
   return (
-    <section aria-labelledby="routes-heading" className="container-page py-12 md:py-16">
-      <h2 id="routes-heading" className="text-2xl md:text-3xl">
+    <section aria-labelledby="routes-heading" className="container-page py-12 lg:py-16">
+      <h2 id="routes-heading" className="text-2xl">
         Popular routes
       </h2>
-      <p className="mt-2 max-w-2xl text-slate">Distances and flight times, and the airports each route uses. Times are estimates from the distance.</p>
+      <p className="mt-2 max-w-2xl text-slate">Each route page lists the airports, the distance and a typical flight time. Times are estimates from the distance.</p>
       <div className="mt-8 grid gap-x-12 gap-y-10 lg:grid-cols-2">
         {ordered.map(([group, list]) => (
           <div key={group}>
@@ -106,13 +106,15 @@ async function PopularRoutes() {
                 .map((r) => {
                   const km = greatCircleKm(r.origin, r.destination);
                   return (
-                    <li key={r.slug} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 py-3">
-                      <Link href={`/flights/${r.slug}`} className="link font-semibold">
-                        {r.origin.city} to {r.destination.city}
+                    <li key={r.slug}>
+                      <Link href={`/flights/${r.slug}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 py-3 hover:text-sapphire">
+                        <span className="font-semibold">
+                          {r.origin.city} to {r.destination.city}
+                        </span>
+                        <span className="tnum text-sm text-slate">
+                          {r.origin.iata} to {r.destination.iata}, about {durationLabel(approxFlightMinutes(km))}
+                        </span>
                       </Link>
-                      <span className="tnum text-sm text-slate">
-                        {r.origin.iata} to {r.destination.iata}, about {durationLabel(approxFlightMinutes(km))}
-                      </span>
                     </li>
                   );
                 })}

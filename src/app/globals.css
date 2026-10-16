@@ -160,6 +160,24 @@
     text-decoration-thickness: 2px;
   }
 
+  /*
+   * On touch screens, standalone text links get a 40px tall hit area without changing layout.
+   * The invisible ::after box grows the target past the text.
+   */
+  @media (pointer: coarse) {
+    .link,
+    .tap {
+      position: relative;
+    }
+
+    .link::after,
+    .tap::after {
+      content: "";
+      position: absolute;
+      inset: calc(50% - 20px) -4px;
+    }
+  }
+
   .scrollbar-none {
     scrollbar-width: none;
   }

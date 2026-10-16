@@ -29,7 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RoutesPage() {
   const routes = await getRoutes();
-  const byOrigin = groupBy(routes, (r) => r.origin.city);
+  // Busiest origins first, then alphabetical.
+  const byOrigin = groupBy(routes, (r) => r.origin.city).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
 
   return (
     <div className="container-page py-10 sm:py-14">

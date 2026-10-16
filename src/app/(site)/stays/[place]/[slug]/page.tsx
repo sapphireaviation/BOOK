@@ -8,7 +8,7 @@ import { Gallery } from "@/components/stays/gallery";
 import { SaveButton } from "@/components/stays/save-button";
 import { StayMap } from "@/components/stays/stay-map";
 import { SampleBadge } from "@/components/stays/stay-row";
-import { Badge, Rating, Skeleton } from "@/components/ui";
+import { Badge, buttonClass, Rating, Skeleton } from "@/components/ui";
 import { absoluteUrl } from "@/config/site";
 import { amenityGroups, amenityLabel, propertyTypeLabels } from "@/lib/amenities";
 import { breadcrumbLd, JsonLd } from "@/lib/jsonld";
@@ -195,7 +195,7 @@ async function ListingContent({ params }: { params: Params }) {
         <nav aria-label="Breadcrumb" className="text-sm text-slate">
           <ol className="flex flex-wrap gap-x-2">
             <li>
-              <Link href="/stays" className="hover:text-ink">
+              <Link href="/stays" className="tap hover:text-ink">
                 Stays
               </Link>
               <span aria-hidden="true" className="ml-2">
@@ -203,7 +203,7 @@ async function ListingContent({ params }: { params: Params }) {
               </span>
             </li>
             <li>
-              <Link href={`/stays/${l.placeSlug}`} className="hover:text-ink">
+              <Link href={`/stays/${l.placeSlug}`} className="tap hover:text-ink">
                 {placeName}
               </Link>
               <span aria-hidden="true" className="ml-2">
@@ -228,7 +228,7 @@ async function ListingContent({ params }: { params: Params }) {
               {l.isDemo && <SampleBadge />}
             </div>
           </div>
-          <Suspense fallback={<span className="h-9 w-20" aria-hidden="true" />}>
+          <Suspense fallback={<span className="h-10 w-20" aria-hidden="true" />}>
             <SaveForUser id={l.id} title={l.title} returnTo={l.url} />
           </Suspense>
         </div>
@@ -415,9 +415,20 @@ async function ListingContent({ params }: { params: Params }) {
             {l.host.languages.length > 0 && <p className="mt-2 text-sm">Speaks {l.host.languages.join(", ")}</p>}
             <p className="mt-2 text-sm text-slate">You get the host&apos;s phone number and email in your booking confirmation.</p>
           </section>
+
+          {l.units.length > 0 && (
+            <div className="sticky bottom-0 z-30 -mx-6 flex items-center justify-between gap-3 border-t border-line bg-surface px-6 py-3 lg:hidden">
+              <p className="text-sm text-slate">
+                From <span className="tnum text-base font-extrabold text-ink">{formatMoney({ amount: l.fromPrice, currency: l.currency })}</span> a night
+              </p>
+              <a href="#book" className={buttonClass({ size: "sm", className: "shrink-0 px-4" })}>
+                Choose dates
+              </a>
+            </div>
+          )}
         </div>
 
-        <aside aria-label="Book this place" className="lg:order-none">
+        <aside id="book" aria-label="Book this place" className="scroll-mt-20 lg:order-none">
           <div className="lg:sticky lg:top-20">
             {l.units.length ? (
               <Suspense fallback={<PanelFallback l={l} />}>
@@ -500,8 +511,11 @@ function PanelFallback({ l }: { l: ListingPage }) {
       <p className="text-lg font-extrabold">
         <span className="tnum">{formatMoney({ amount: l.fromPrice, currency: l.currency })}</span> <span className="text-sm font-semibold text-slate">a night before taxes</span>
       </p>
-      <Skeleton className="mt-4 h-11 w-full" />
-      <Skeleton className="mt-3 h-11 w-full" />
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="col-span-2 h-12 w-full" />
+      </div>
     </div>
   );
 }

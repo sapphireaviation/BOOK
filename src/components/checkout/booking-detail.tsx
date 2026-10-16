@@ -19,7 +19,7 @@ function headline(detail: BookingDetail) {
   const what = stay ? stay.listing.title : `${flight!.origin} to ${flight!.destination}`;
   switch (booking.status) {
     case "confirmed":
-      return stay ? `Your stay at ${what} is booked` : flight!.airlineReference ? `Your flight ${what} is booked` : `Payment received for ${what}`;
+      return stay ? "Your stay is booked" : flight!.airlineReference ? "Your flight is booked" : `Payment received for ${what}`;
     case "completed":
       return stay ? `Your stay at ${what}` : `Your flight ${what}`;
     case "pending_payment":
@@ -68,7 +68,7 @@ function StatusNotice({ detail, checkoutHref, paidJustNow }: { detail: BookingDe
   }
   if (booking.status === "confirmed") {
     return (
-      <Notice tone="good" title="Confirmed">
+      <Notice tone="good">
         We sent the confirmation to {booking.contactEmail}.
       </Notice>
     );
@@ -132,7 +132,7 @@ export function BookingDetailView({
           </p>
           <StatusBadge status={booking.status} />
         </div>
-        <h1 className="mt-2 text-3xl">{headline(detail)}</h1>
+        <h1 className="mt-2 text-2xl sm:text-3xl">{headline(detail)}</h1>
         <div className="mt-5 max-w-2xl">
           <StatusNotice detail={detail} checkoutHref={checkoutHref} paidJustNow={paidJustNow} />
         </div>
@@ -166,7 +166,7 @@ export function BookingDetailView({
             </a>
             {stay && (
               <a
-                className={buttonClass({ variant: "ghost" })}
+                className={buttonClass({ variant: "secondary" })}
                 href={`https://www.openstreetmap.org/?mlat=${stay.listing.lat}&mlon=${stay.listing.lng}#map=16/${stay.listing.lat}/${stay.listing.lng}`}
                 target="_blank"
                 rel="noreferrer"
@@ -183,8 +183,8 @@ export function BookingDetailView({
           </h2>
           {stay && (
             <p className="mt-2 max-w-prose text-sm">
-              <span className="font-semibold">{policyLabel(stay.cancellationPolicy)}.</span> {policySummary(stay.cancellationPolicy)} Check in counts from{" "}
-              {stay.listing.checkInFrom.slice(0, 5)} on {longDay(stay.checkIn)}.
+              <span className="font-semibold">{policyLabel(stay.cancellationPolicy)}.</span> {policySummary(stay.cancellationPolicy)} The days count back from
+              check in at {stay.listing.checkInFrom.slice(0, 5)} on {longDay(stay.checkIn)}.
             </p>
           )}
           {flight && cancel && <p className="mt-2 max-w-prose text-sm">{cancel.policy}. The airline&apos;s fare rules decide any refund.</p>}

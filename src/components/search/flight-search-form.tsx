@@ -191,7 +191,7 @@ export function FlightSearchForm({ initial, layout = "bar" }: { initial?: Partia
       <Form action="/flights/search" onSubmit={onSubmit} aria-label="Search flights" className="rounded-md border border-line bg-surface p-2">
         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-2 px-1 pt-1">
           <TripType oneWay={oneWay} onChange={setOneWay} size="sm" />
-          <button type="button" onClick={swap} className="link text-sm font-semibold">
+          <button type="button" onClick={swap} className="link inline-flex min-h-10 items-center text-sm font-semibold">
             Swap from and to
           </button>
         </div>
@@ -328,7 +328,7 @@ export function FlightSearchForm({ initial, layout = "bar" }: { initial?: Partia
           Search flights
         </Button>
         <TripType oneWay={oneWay} onChange={setOneWay} />
-        <button type="button" onClick={swap} className={cn("link text-sm font-semibold", !from && !to && "hidden")}>
+        <button type="button" onClick={swap} className={cn("link inline-flex min-h-10 items-center text-sm font-semibold", !from && !to && "hidden")}>
           Swap from and to
         </button>
       </div>

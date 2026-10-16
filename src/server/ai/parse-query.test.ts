@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { parseTripQuery } from "./parse-query";
-import type { Resolvers } from "./finish";
+import { resolveAirport, type Resolvers } from "./finish";
 import { extractIntent, normalize } from "./rules";
 
 // Thursday 15 October 2026
@@ -280,5 +280,21 @@ describe("model path", () => {
     await withKey("hotel in goa tomorrow");
     expect(llm.intentFromModel).not.toHaveBeenCalled();
     vi.unstubAllEnvs();
+  });
+});
+
+describe("resolveAirport", () => {
+  const genoaAndGoa: Resolvers = {
+    airports: async () => [
+      { iata: "GOA", name: "Genoa Cristoforo Colombo Airport", city: "Genova" },
+      { iata: "GOI", name: "Goa Dabolim International Airport", city: "Goa" },
+    ],
+    places: async () => [],
+  };
+  it("reads a city name before a matching airport code", async () => {
+    expect((await resolveAirport("goa", genoaAndGoa))?.iata).toBe("GOI");
+  });
+  it("reads a code typed in capitals as the code", async () => {
+    expect((await resolveAirport("GOA", genoaAndGoa))?.iata).toBe("GOA");
   });
 });

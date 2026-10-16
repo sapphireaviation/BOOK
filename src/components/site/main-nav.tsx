@@ -33,8 +33,8 @@ function NavLinks({ pathname }: { pathname: string | null }) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`relative rounded-md px-2 py-2 text-sm sm:px-3 font-semibold hover:bg-mist ${
-              active ? "text-ink after:absolute after:inset-x-3 after:-bottom-[13px] after:h-[3px] after:bg-sapphire" : "text-slate"
+            className={`relative inline-flex h-10 items-center rounded-md px-2 text-sm font-semibold sm:px-3 hover:bg-mist ${
+              active ? "text-ink after:absolute after:inset-x-3 after:-bottom-3 after:h-[3px] after:bg-sapphire" : "text-slate"
             }`}
           >
             {item.label}

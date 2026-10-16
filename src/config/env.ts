@@ -25,6 +25,8 @@ const schema = z.object({
 
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  /** "true" enables the simulated test payment provider even in production builds. Never set it on the live site. */
+  ALLOW_TEST_PAYMENTS: z.enum(["true", "false"]).optional(),
 
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-haiku-5-5"),
@@ -53,6 +55,8 @@ export const features = {
   flights: () => Boolean(process.env.DUFFEL_ACCESS_TOKEN),
   razorpay: () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET),
   stripe: () => Boolean(process.env.STRIPE_SECRET_KEY),
+  /** Simulated payments: on outside production, or when ALLOW_TEST_PAYMENTS=true. Never otherwise. */
+  testPayments: () => process.env.NODE_ENV !== "production" || process.env.ALLOW_TEST_PAYMENTS === "true",
   email: () => Boolean(process.env.RESEND_API_KEY),
   google: () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
   ai: () => Boolean(process.env.ANTHROPIC_API_KEY),

@@ -53,16 +53,16 @@ async function Destinations() {
   const abroad = all.filter((d) => d.countryCode !== site.country);
 
   return (
-    <section className="container-page py-12" aria-labelledby="destinations-title">
+    <section className="container-page py-12 lg:py-16" aria-labelledby="destinations-title">
       <h2 id="destinations-title" className="text-2xl">
         Places to stay
       </h2>
       <p className="mt-2 max-w-2xl text-slate">
         {withStays.length
-          ? `${withStays.reduce((s, d) => s + d.listingCount, 0)} stays are listed across ${withStays.length} of these places. Each page shows prices from our listings and answers common questions.`
-          : "Owners are adding their places now. Each destination page shows its stays as soon as they are listed."}
+          ? `${withStays.reduce((s, d) => s + d.listingCount, 0)} stays are listed across ${withStays.length} of these places.`
+          : "No stays are listed yet. Each place shows its stays here as soon as an owner lists one."}
       </p>
-      <div className="mt-8 grid gap-10 lg:grid-cols-2">
+      <div className="mt-8 grid gap-x-12 gap-y-10 lg:grid-cols-2">
         <DestinationGroup heading="India" items={india} />
         <DestinationGroup heading="Abroad" items={abroad} />
       </div>

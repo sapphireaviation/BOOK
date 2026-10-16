@@ -156,14 +156,16 @@ async function PlaceContent({ params }: { params: Params }) {
         </div>
       </header>
 
-      <section className="container-page border-b border-line py-8" aria-labelledby="dates-title">
-        <h2 id="dates-title" className="text-xl">
-          Check prices for your dates
-        </h2>
-        <div className="mt-4">
-          <Suspense fallback={<div className="h-11" aria-hidden="true" />}>
-            <StaySearchForm layout="bar" initial={{ place: p.slug }} />
-          </Suspense>
+      <section className="border-b border-line" aria-labelledby="dates-title">
+        <div className="container-page py-8">
+          <h2 id="dates-title" className="text-xl">
+            Check prices for your dates
+          </h2>
+          <div className="mt-4">
+            <Suspense fallback={<div className="h-11" aria-hidden="true" />}>
+              <StaySearchForm layout="bar" initial={{ place: p.slug }} />
+            </Suspense>
+          </div>
         </div>
       </section>
 

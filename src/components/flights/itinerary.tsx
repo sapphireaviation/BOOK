@@ -34,7 +34,7 @@ function SegmentBlock({ seg }: { seg: Segment }) {
 
       <p className="tnum font-bold">
         {localClock(seg.arriveAt)}
-        {days > 0 && <sup className="ml-0.5 text-2xs text-signal">+{days}</sup>}
+        {days > 0 && <sup className="ml-0.5 text-2xs font-bold text-ink">+{days}</sup>}
       </p>
       <p>
         {seg.destination.city} ({seg.destination.iata})<span className="text-slate">, {seg.destination.name}</span>

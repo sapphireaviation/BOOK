@@ -12,7 +12,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
         <rect x="0" y="9" width="9" height="4" rx="1" fill="currentColor" />
         <rect x="13" y="9" width="9" height="4" rx="1" fill="var(--color-runway)" />
       </svg>
-      <span className="text-lg leading-none">{site.name}</span>
+      <span className="text-lg leading-none max-[380px]:sr-only">{site.name}</span>
     </Link>
   );
 }

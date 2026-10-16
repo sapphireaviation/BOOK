@@ -27,7 +27,7 @@ export function AccountMenu() {
 
   if (!data) {
     return (
-      <Link href="/sign-in" className="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-paper hover:bg-sapphire-deep">
+      <Link href="/sign-in" className="rounded-md bg-ink px-3 py-2 text-sm font-semibold text-paper sm:px-4 hover:bg-sapphire-deep">
         Sign in
       </Link>
     );

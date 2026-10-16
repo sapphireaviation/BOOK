@@ -35,7 +35,9 @@ export function isISODate(s: unknown): s is ISODate {
 /** "Fri 24 Oct" */
 export function formatDay(d: ISODate | Date, locale = "en-IN") {
   const date = typeof d === "string" ? parseISODate(d) : d;
-  return new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(date);
+  const parts = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).formatToParts(date);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("weekday")} ${get("day")} ${get("month")}`;
 }
 
 /** "24 Oct 2026" */

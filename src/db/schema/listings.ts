@@ -5,19 +5,18 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
-  pgTable,
   primaryKey,
   real,
   text,
   time,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { booking } from "./pg-schema";
 import { user } from "./auth";
 
-export const listingKind = pgEnum("listing_kind", ["stay", "experience", "transport"]);
-export const listingStatus = pgEnum("listing_status", ["draft", "published", "suspended", "archived"]);
-export const propertyType = pgEnum("property_type", [
+export const listingKind = booking.enum("listing_kind", ["stay", "experience", "transport"]);
+export const listingStatus = booking.enum("listing_status", ["draft", "published", "suspended", "archived"]);
+export const propertyType = booking.enum("property_type", [
   "hotel",
   "guesthouse",
   "homestay",
@@ -29,9 +28,9 @@ export const propertyType = pgEnum("property_type", [
   "cabin",
   "other",
 ]);
-export const cancellationPolicy = pgEnum("cancellation_policy", ["flexible", "moderate", "strict", "non_refundable"]);
+export const cancellationPolicy = booking.enum("cancellation_policy", ["flexible", "moderate", "strict", "non_refundable"]);
 
-export const listings = pgTable(
+export const listings = booking.table(
   "listings",
   {
     id: text("id").primaryKey(),
@@ -98,7 +97,7 @@ export const listings = pgTable(
   ],
 );
 
-export const listingPhotos = pgTable(
+export const listingPhotos = booking.table(
   "listing_photos",
   {
     id: text("id").primaryKey(),
@@ -116,7 +115,7 @@ export const listingPhotos = pgTable(
 );
 
 /** A bookable unit: a room type in a hotel, or the whole place for a home. */
-export const listingUnits = pgTable(
+export const listingUnits = booking.table(
   "listing_units",
   {
     id: text("id").primaryKey(),
@@ -147,7 +146,7 @@ export const listingUnits = pgTable(
  * Per-date overrides and bookings. A missing row means: available, full quantity, base price.
  * `booked` is incremented inside a transaction with a row lock when a booking is held.
  */
-export const unitInventory = pgTable(
+export const unitInventory = booking.table(
   "unit_inventory",
   {
     unitId: text("unit_id")
@@ -164,7 +163,7 @@ export const unitInventory = pgTable(
   (t) => [primaryKey({ columns: [t.unitId, t.date] })],
 );
 
-export const wishlists = pgTable(
+export const wishlists = booking.table(
   "wishlists",
   {
     userId: text("user_id")
@@ -178,7 +177,7 @@ export const wishlists = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.listingId] })],
 );
 
-export const hostProfiles = pgTable(
+export const hostProfiles = booking.table(
   "host_profiles",
   {
     userId: text("user_id")

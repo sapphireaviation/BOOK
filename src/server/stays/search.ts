@@ -49,7 +49,7 @@ export async function resolvePlace(place: string): Promise<ResolvedPlace | null>
         when lower(name) = lower(${term}) then 1
         else 2
       end as rank
-    from destinations
+    from booking.destinations
     where slug in (${sql.join(slugs.map((s) => sql`${s}`), sql`, `)})
        or lower(name) = lower(${term})
        ${term.length >= 3 ? sql`or name ilike ${`${escapeLike(term)}%`}` : sql``}
@@ -61,7 +61,7 @@ export async function resolvePlace(place: string): Promise<ResolvedPlace | null>
 
   const cities = await db.execute<{ city: string; lat: number; lng: number }>(sql`
     select min(city) as city, avg(lat) as lat, avg(lng) as lng
-    from listings
+    from booking.listings
     where status = 'published' and kind = 'stay' and lower(city) = lower(${term})
     group by lower(city)
     limit 1
@@ -192,7 +192,7 @@ export async function searchStays(params: StaySearch, opts?: { source?: "web" | 
              l.destination_slug, l.rating_avg, l.rating_count, l.max_guests, l.bedrooms, l.amenities, l.instant_book,
              l.cancellation_policy, l.currency, l.is_demo, l.cleaning_fee, l.tax_bps,
              ${distance} as distance_km
-      from listings l
+      from booking.listings l
       where l.status = 'published' and l.kind = 'stay'
         and ${placeFilter}
         and l.min_nights <= ${nights}::int and l.max_nights >= ${nights}::int
@@ -203,10 +203,10 @@ export async function searchStays(params: StaySearch, opts?: { source?: "web" | 
              coalesce(ui.price, u.base_price) as price,
              coalesce(ui.total, u.quantity) - coalesce(ui.booked, 0) as free,
              coalesce(ui.closed, false) as closed
-      from listing_units u
+      from booking.listing_units u
       join cand c on c.id = u.listing_id
       cross join nights n
-      left join unit_inventory ui on ui.unit_id = u.id and ui.date = n.night
+      left join booking.unit_inventory ui on ui.unit_id = u.id and ui.date = n.night
       where u.active and u.max_guests * ${rooms}::int >= ${guests}::int
     ),
     unit_ok as (
@@ -221,7 +221,7 @@ export async function searchStays(params: StaySearch, opts?: { source?: "web" | 
                + greatest(0, ${guests}::int - u.included_guests * ${rooms}::int)::bigint * u.extra_guest_price * ${nights}::int
                as room_total
       from unit_ok o
-      join listing_units u on u.id = o.unit_id
+      join booking.listing_units u on u.id = o.unit_id
     ),
     best as (
       select distinct on (listing_id) listing_id, unit_id, room_total
@@ -242,7 +242,7 @@ export async function searchStays(params: StaySearch, opts?: { source?: "web" | 
       select f.*,
              row_number() over (order by ${order}) as ord,
              (select json_build_object('url', p.url, 'alt', p.alt)
-                from listing_photos p where p.listing_id = f.id
+                from booking.listing_photos p where p.listing_id = f.id
                 order by p.position, p.id limit 1) as photo
       from filtered f
       order by ${order}
@@ -340,8 +340,8 @@ export async function suggestPlaces(q: string, limit = 8): Promise<PlaceSuggesti
 
   const rows = await db.execute<{ slug: string; name: string; region: string | null; country_name: string; listing_count: number }>(sql`
     select d.slug, d.name, d.region, d.country_name, count(l.id)::int as listing_count
-    from destinations d
-    left join listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
+    from booking.destinations d
+    left join booking.listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
     ${
       term
         ? sql`where d.name ilike ${like} or d.name ilike ${wordLike} ${termSlug ? sql`or d.slug like ${`${escapeLike(termSlug)}%`}` : sql``}

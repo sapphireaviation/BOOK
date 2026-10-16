@@ -1,8 +1,9 @@
-import { boolean, index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, text, timestamp } from "drizzle-orm/pg-core";
+import { booking } from "./pg-schema";
 
-export const userRole = pgEnum("user_role", ["traveler", "host", "admin"]);
+export const userRole = booking.enum("user_role", ["traveler", "host", "admin"]);
 
-export const user = pgTable("user", {
+export const user = booking.table("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -14,7 +15,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const session = pgTable(
+export const session = booking.table(
   "session",
   {
     id: text("id").primaryKey(),
@@ -31,7 +32,7 @@ export const session = pgTable(
   (t) => [index("session_user_idx").on(t.userId)],
 );
 
-export const account = pgTable(
+export const account = booking.table(
   "account",
   {
     id: text("id").primaryKey(),
@@ -53,7 +54,7 @@ export const account = pgTable(
   (t) => [index("account_user_idx").on(t.userId)],
 );
 
-export const verification = pgTable("verification", {
+export const verification = booking.table("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),

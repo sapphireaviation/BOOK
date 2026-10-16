@@ -1,14 +1,16 @@
-CREATE TYPE "public"."user_role" AS ENUM('traveler', 'host', 'admin');--> statement-breakpoint
-CREATE TYPE "public"."cancellation_policy" AS ENUM('flexible', 'moderate', 'strict', 'non_refundable');--> statement-breakpoint
-CREATE TYPE "public"."listing_kind" AS ENUM('stay', 'experience', 'transport');--> statement-breakpoint
-CREATE TYPE "public"."listing_status" AS ENUM('draft', 'published', 'suspended', 'archived');--> statement-breakpoint
-CREATE TYPE "public"."property_type" AS ENUM('hotel', 'guesthouse', 'homestay', 'apartment', 'house', 'villa', 'hostel', 'resort', 'cabin', 'other');--> statement-breakpoint
-CREATE TYPE "public"."booking_kind" AS ENUM('stay', 'flight');--> statement-breakpoint
-CREATE TYPE "public"."booking_status" AS ENUM('draft', 'pending_payment', 'confirmed', 'completed', 'cancelled', 'refunded', 'expired', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."payment_provider" AS ENUM('razorpay', 'stripe', 'manual');--> statement-breakpoint
-CREATE TYPE "public"."payment_status" AS ENUM('created', 'authorized', 'captured', 'failed', 'refunded', 'partially_refunded');--> statement-breakpoint
-CREATE TYPE "public"."payout_status" AS ENUM('owed', 'scheduled', 'paid', 'cancelled');--> statement-breakpoint
-CREATE TABLE "account" (
+CREATE SCHEMA IF NOT EXISTS "booking";
+--> statement-breakpoint
+CREATE TYPE "booking"."user_role" AS ENUM('traveler', 'host', 'admin');--> statement-breakpoint
+CREATE TYPE "booking"."cancellation_policy" AS ENUM('flexible', 'moderate', 'strict', 'non_refundable');--> statement-breakpoint
+CREATE TYPE "booking"."listing_kind" AS ENUM('stay', 'experience', 'transport');--> statement-breakpoint
+CREATE TYPE "booking"."listing_status" AS ENUM('draft', 'published', 'suspended', 'archived');--> statement-breakpoint
+CREATE TYPE "booking"."property_type" AS ENUM('hotel', 'guesthouse', 'homestay', 'apartment', 'house', 'villa', 'hostel', 'resort', 'cabin', 'other');--> statement-breakpoint
+CREATE TYPE "booking"."booking_kind" AS ENUM('stay', 'flight');--> statement-breakpoint
+CREATE TYPE "booking"."booking_status" AS ENUM('draft', 'pending_payment', 'confirmed', 'completed', 'cancelled', 'refunded', 'expired', 'failed');--> statement-breakpoint
+CREATE TYPE "booking"."payment_provider" AS ENUM('razorpay', 'stripe', 'manual', 'test');--> statement-breakpoint
+CREATE TYPE "booking"."payment_status" AS ENUM('created', 'authorized', 'captured', 'failed', 'refunded', 'partially_refunded');--> statement-breakpoint
+CREATE TYPE "booking"."payout_status" AS ENUM('owed', 'scheduled', 'paid', 'cancelled');--> statement-breakpoint
+CREATE TABLE "booking"."account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
@@ -24,7 +26,7 @@ CREATE TABLE "account" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "session" (
+CREATE TABLE "booking"."session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"token" text NOT NULL,
@@ -36,20 +38,20 @@ CREATE TABLE "session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
-CREATE TABLE "user" (
+CREATE TABLE "booking"."user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
-	"role" "user_role" DEFAULT 'traveler' NOT NULL,
+	"role" "booking"."user_role" DEFAULT 'traveler' NOT NULL,
 	"phone" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "verification" (
+CREATE TABLE "booking"."verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
@@ -58,7 +60,7 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "airports" (
+CREATE TABLE "booking"."airports" (
 	"iata" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"city" text NOT NULL,
@@ -70,7 +72,7 @@ CREATE TABLE "airports" (
 	"popularity" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "destinations" (
+CREATE TABLE "booking"."destinations" (
 	"slug" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"region" text,
@@ -89,7 +91,7 @@ CREATE TABLE "destinations" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "flight_routes" (
+CREATE TABLE "booking"."flight_routes" (
 	"slug" text PRIMARY KEY NOT NULL,
 	"origin" text NOT NULL,
 	"destination" text NOT NULL,
@@ -99,7 +101,7 @@ CREATE TABLE "flight_routes" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "host_profiles" (
+CREATE TABLE "booking"."host_profiles" (
 	"user_id" text PRIMARY KEY NOT NULL,
 	"display_name" text NOT NULL,
 	"about" text DEFAULT '' NOT NULL,
@@ -114,7 +116,7 @@ CREATE TABLE "host_profiles" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "listing_photos" (
+CREATE TABLE "booking"."listing_photos" (
 	"id" text PRIMARY KEY NOT NULL,
 	"listing_id" text NOT NULL,
 	"url" text NOT NULL,
@@ -125,7 +127,7 @@ CREATE TABLE "listing_photos" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "listing_units" (
+CREATE TABLE "booking"."listing_units" (
 	"id" text PRIMARY KEY NOT NULL,
 	"listing_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -143,16 +145,16 @@ CREATE TABLE "listing_units" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "listings" (
+CREATE TABLE "booking"."listings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"host_id" text NOT NULL,
-	"kind" "listing_kind" DEFAULT 'stay' NOT NULL,
-	"status" "listing_status" DEFAULT 'draft' NOT NULL,
+	"kind" "booking"."listing_kind" DEFAULT 'stay' NOT NULL,
+	"status" "booking"."listing_status" DEFAULT 'draft' NOT NULL,
 	"slug" text NOT NULL,
 	"title" text NOT NULL,
 	"summary" text DEFAULT '' NOT NULL,
 	"description" text DEFAULT '' NOT NULL,
-	"property_type" "property_type" DEFAULT 'homestay' NOT NULL,
+	"property_type" "booking"."property_type" DEFAULT 'homestay' NOT NULL,
 	"address_line" text,
 	"locality" text,
 	"city" text NOT NULL,
@@ -177,19 +179,20 @@ CREATE TABLE "listings" (
 	"min_nights" integer DEFAULT 1 NOT NULL,
 	"max_nights" integer DEFAULT 30 NOT NULL,
 	"instant_book" boolean DEFAULT true NOT NULL,
-	"cancellation_policy" "cancellation_policy" DEFAULT 'moderate' NOT NULL,
+	"cancellation_policy" "booking"."cancellation_policy" DEFAULT 'moderate' NOT NULL,
 	"contact_phone" text,
 	"contact_email" text,
 	"rating_avg" real DEFAULT 0 NOT NULL,
 	"rating_count" integer DEFAULT 0 NOT NULL,
 	"verified" boolean DEFAULT false NOT NULL,
+	"is_demo" boolean DEFAULT false NOT NULL,
 	"published_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "listings_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-CREATE TABLE "unit_inventory" (
+CREATE TABLE "booking"."unit_inventory" (
 	"unit_id" text NOT NULL,
 	"date" date NOT NULL,
 	"booked" integer DEFAULT 0 NOT NULL,
@@ -199,18 +202,18 @@ CREATE TABLE "unit_inventory" (
 	CONSTRAINT "unit_inventory_unit_id_date_pk" PRIMARY KEY("unit_id","date")
 );
 --> statement-breakpoint
-CREATE TABLE "wishlists" (
+CREATE TABLE "booking"."wishlists" (
 	"user_id" text NOT NULL,
 	"listing_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "wishlists_user_id_listing_id_pk" PRIMARY KEY("user_id","listing_id")
 );
 --> statement-breakpoint
-CREATE TABLE "bookings" (
+CREATE TABLE "booking"."bookings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"reference" text NOT NULL,
-	"kind" "booking_kind" NOT NULL,
-	"status" "booking_status" DEFAULT 'draft' NOT NULL,
+	"kind" "booking"."booking_kind" NOT NULL,
+	"status" "booking"."booking_status" DEFAULT 'draft' NOT NULL,
 	"user_id" text,
 	"contact_name" text NOT NULL,
 	"contact_email" text NOT NULL,
@@ -229,7 +232,7 @@ CREATE TABLE "bookings" (
 	CONSTRAINT "bookings_reference_unique" UNIQUE("reference")
 );
 --> statement-breakpoint
-CREATE TABLE "flight_bookings" (
+CREATE TABLE "booking"."flight_bookings" (
 	"booking_id" text PRIMARY KEY NOT NULL,
 	"provider" text NOT NULL,
 	"offer_id" text NOT NULL,
@@ -246,19 +249,19 @@ CREATE TABLE "flight_bookings" (
 	"provider_currency" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "payment_events" (
+CREATE TABLE "booking"."payment_events" (
 	"id" text PRIMARY KEY NOT NULL,
-	"provider" "payment_provider" NOT NULL,
+	"provider" "booking"."payment_provider" NOT NULL,
 	"type" text NOT NULL,
 	"payload" jsonb NOT NULL,
 	"processed_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "payments" (
+CREATE TABLE "booking"."payments" (
 	"id" text PRIMARY KEY NOT NULL,
 	"booking_id" text NOT NULL,
-	"provider" "payment_provider" NOT NULL,
-	"status" "payment_status" DEFAULT 'created' NOT NULL,
+	"provider" "booking"."payment_provider" NOT NULL,
+	"status" "booking"."payment_status" DEFAULT 'created' NOT NULL,
 	"amount" integer NOT NULL,
 	"currency" text NOT NULL,
 	"provider_order_id" text,
@@ -270,20 +273,20 @@ CREATE TABLE "payments" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "payouts" (
+CREATE TABLE "booking"."payouts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"booking_id" text NOT NULL,
 	"host_id" text NOT NULL,
 	"amount" integer NOT NULL,
 	"currency" text NOT NULL,
-	"status" "payout_status" DEFAULT 'owed' NOT NULL,
+	"status" "booking"."payout_status" DEFAULT 'owed' NOT NULL,
 	"release_on" date NOT NULL,
 	"paid_at" timestamp with time zone,
 	"provider_transfer_id" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "refunds" (
+CREATE TABLE "booking"."refunds" (
 	"id" text PRIMARY KEY NOT NULL,
 	"payment_id" text NOT NULL,
 	"booking_id" text NOT NULL,
@@ -295,7 +298,7 @@ CREATE TABLE "refunds" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "stay_bookings" (
+CREATE TABLE "booking"."stay_bookings" (
 	"booking_id" text PRIMARY KEY NOT NULL,
 	"listing_id" text NOT NULL,
 	"unit_id" text NOT NULL,
@@ -310,7 +313,7 @@ CREATE TABLE "stay_bookings" (
 	"cancellation_policy" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "reviews" (
+CREATE TABLE "booking"."reviews" (
 	"id" text PRIMARY KEY NOT NULL,
 	"booking_id" text NOT NULL,
 	"listing_id" text NOT NULL,
@@ -327,7 +330,7 @@ CREATE TABLE "reviews" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "email_log" (
+CREATE TABLE "booking"."email_log" (
 	"id" text PRIMARY KEY NOT NULL,
 	"to" text NOT NULL,
 	"template" text NOT NULL,
@@ -338,13 +341,13 @@ CREATE TABLE "email_log" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "rate_limits" (
+CREATE TABLE "booking"."rate_limits" (
 	"key" text PRIMARY KEY NOT NULL,
 	"tokens" integer NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "search_log" (
+CREATE TABLE "booking"."search_log" (
 	"id" text PRIMARY KEY NOT NULL,
 	"kind" text NOT NULL,
 	"source" text DEFAULT 'web' NOT NULL,
@@ -354,53 +357,53 @@ CREATE TABLE "search_log" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "flight_routes" ADD CONSTRAINT "flight_routes_origin_airports_iata_fk" FOREIGN KEY ("origin") REFERENCES "public"."airports"("iata") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "flight_routes" ADD CONSTRAINT "flight_routes_destination_airports_iata_fk" FOREIGN KEY ("destination") REFERENCES "public"."airports"("iata") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "host_profiles" ADD CONSTRAINT "host_profiles_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "listing_photos" ADD CONSTRAINT "listing_photos_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "listing_units" ADD CONSTRAINT "listing_units_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "listings" ADD CONSTRAINT "listings_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "unit_inventory" ADD CONSTRAINT "unit_inventory_unit_id_listing_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."listing_units"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "bookings" ADD CONSTRAINT "bookings_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "flight_bookings" ADD CONSTRAINT "flight_bookings_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payments" ADD CONSTRAINT "payments_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payouts" ADD CONSTRAINT "payouts_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payouts" ADD CONSTRAINT "payouts_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "refunds" ADD CONSTRAINT "refunds_payment_id_payments_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "refunds" ADD CONSTRAINT "refunds_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "stay_bookings" ADD CONSTRAINT "stay_bookings_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "stay_bookings" ADD CONSTRAINT "stay_bookings_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "stay_bookings" ADD CONSTRAINT "stay_bookings_unit_id_listing_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."listing_units"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "stay_bookings" ADD CONSTRAINT "stay_bookings_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "public"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "account_user_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "session_user_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "airports_city_idx" ON "airports" USING btree ("city");--> statement-breakpoint
-CREATE INDEX "airports_country_idx" ON "airports" USING btree ("country_code");--> statement-breakpoint
-CREATE INDEX "destinations_country_idx" ON "destinations" USING btree ("country_code");--> statement-breakpoint
-CREATE INDEX "listing_photos_listing_idx" ON "listing_photos" USING btree ("listing_id","position");--> statement-breakpoint
-CREATE INDEX "listing_units_listing_idx" ON "listing_units" USING btree ("listing_id");--> statement-breakpoint
-CREATE INDEX "listings_host_idx" ON "listings" USING btree ("host_id");--> statement-breakpoint
-CREATE INDEX "listings_status_city_idx" ON "listings" USING btree ("status","city");--> statement-breakpoint
-CREATE INDEX "listings_destination_idx" ON "listings" USING btree ("destination_slug");--> statement-breakpoint
-CREATE INDEX "listings_geo_idx" ON "listings" USING btree ("lat","lng");--> statement-breakpoint
-CREATE INDEX "bookings_user_idx" ON "bookings" USING btree ("user_id","created_at");--> statement-breakpoint
-CREATE INDEX "bookings_status_idx" ON "bookings" USING btree ("status","expires_at");--> statement-breakpoint
-CREATE INDEX "bookings_email_idx" ON "bookings" USING btree ("contact_email");--> statement-breakpoint
-CREATE INDEX "flight_bookings_order_idx" ON "flight_bookings" USING btree ("provider_order_id");--> statement-breakpoint
-CREATE INDEX "payments_booking_idx" ON "payments" USING btree ("booking_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "payments_provider_order_idx" ON "payments" USING btree ("provider","provider_order_id");--> statement-breakpoint
-CREATE INDEX "payouts_host_idx" ON "payouts" USING btree ("host_id","status");--> statement-breakpoint
-CREATE UNIQUE INDEX "payouts_booking_idx" ON "payouts" USING btree ("booking_id");--> statement-breakpoint
-CREATE INDEX "refunds_booking_idx" ON "refunds" USING btree ("booking_id");--> statement-breakpoint
-CREATE INDEX "stay_bookings_listing_idx" ON "stay_bookings" USING btree ("listing_id","check_in");--> statement-breakpoint
-CREATE INDEX "stay_bookings_host_idx" ON "stay_bookings" USING btree ("host_id","check_in");--> statement-breakpoint
-CREATE UNIQUE INDEX "reviews_booking_idx" ON "reviews" USING btree ("booking_id");--> statement-breakpoint
-CREATE INDEX "reviews_listing_idx" ON "reviews" USING btree ("listing_id","created_at");--> statement-breakpoint
-CREATE INDEX "search_log_kind_created_idx" ON "search_log" USING btree ("kind","created_at");
+ALTER TABLE "booking"."account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."flight_routes" ADD CONSTRAINT "flight_routes_origin_airports_iata_fk" FOREIGN KEY ("origin") REFERENCES "booking"."airports"("iata") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."flight_routes" ADD CONSTRAINT "flight_routes_destination_airports_iata_fk" FOREIGN KEY ("destination") REFERENCES "booking"."airports"("iata") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."host_profiles" ADD CONSTRAINT "host_profiles_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."listing_photos" ADD CONSTRAINT "listing_photos_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "booking"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."listing_units" ADD CONSTRAINT "listing_units_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "booking"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."listings" ADD CONSTRAINT "listings_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "booking"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."unit_inventory" ADD CONSTRAINT "unit_inventory_unit_id_listing_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "booking"."listing_units"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."wishlists" ADD CONSTRAINT "wishlists_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."wishlists" ADD CONSTRAINT "wishlists_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "booking"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."bookings" ADD CONSTRAINT "bookings_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."flight_bookings" ADD CONSTRAINT "flight_bookings_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."payments" ADD CONSTRAINT "payments_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."payouts" ADD CONSTRAINT "payouts_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."payouts" ADD CONSTRAINT "payouts_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "booking"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."refunds" ADD CONSTRAINT "refunds_payment_id_payments_id_fk" FOREIGN KEY ("payment_id") REFERENCES "booking"."payments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."refunds" ADD CONSTRAINT "refunds_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."stay_bookings" ADD CONSTRAINT "stay_bookings_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."stay_bookings" ADD CONSTRAINT "stay_bookings_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "booking"."listings"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."stay_bookings" ADD CONSTRAINT "stay_bookings_unit_id_listing_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "booking"."listing_units"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."stay_bookings" ADD CONSTRAINT "stay_bookings_host_id_user_id_fk" FOREIGN KEY ("host_id") REFERENCES "booking"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."reviews" ADD CONSTRAINT "reviews_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "booking"."bookings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."reviews" ADD CONSTRAINT "reviews_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "booking"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "booking"."reviews" ADD CONSTRAINT "reviews_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "booking"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "account_user_idx" ON "booking"."account" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "session_user_idx" ON "booking"."session" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "airports_city_idx" ON "booking"."airports" USING btree ("city");--> statement-breakpoint
+CREATE INDEX "airports_country_idx" ON "booking"."airports" USING btree ("country_code");--> statement-breakpoint
+CREATE INDEX "destinations_country_idx" ON "booking"."destinations" USING btree ("country_code");--> statement-breakpoint
+CREATE INDEX "listing_photos_listing_idx" ON "booking"."listing_photos" USING btree ("listing_id","position");--> statement-breakpoint
+CREATE INDEX "listing_units_listing_idx" ON "booking"."listing_units" USING btree ("listing_id");--> statement-breakpoint
+CREATE INDEX "listings_host_idx" ON "booking"."listings" USING btree ("host_id");--> statement-breakpoint
+CREATE INDEX "listings_status_city_idx" ON "booking"."listings" USING btree ("status","city");--> statement-breakpoint
+CREATE INDEX "listings_destination_idx" ON "booking"."listings" USING btree ("destination_slug");--> statement-breakpoint
+CREATE INDEX "listings_geo_idx" ON "booking"."listings" USING btree ("lat","lng");--> statement-breakpoint
+CREATE INDEX "bookings_user_idx" ON "booking"."bookings" USING btree ("user_id","created_at");--> statement-breakpoint
+CREATE INDEX "bookings_status_idx" ON "booking"."bookings" USING btree ("status","expires_at");--> statement-breakpoint
+CREATE INDEX "bookings_email_idx" ON "booking"."bookings" USING btree ("contact_email");--> statement-breakpoint
+CREATE INDEX "flight_bookings_order_idx" ON "booking"."flight_bookings" USING btree ("provider_order_id");--> statement-breakpoint
+CREATE INDEX "payments_booking_idx" ON "booking"."payments" USING btree ("booking_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "payments_provider_order_idx" ON "booking"."payments" USING btree ("provider","provider_order_id");--> statement-breakpoint
+CREATE INDEX "payouts_host_idx" ON "booking"."payouts" USING btree ("host_id","status");--> statement-breakpoint
+CREATE UNIQUE INDEX "payouts_booking_idx" ON "booking"."payouts" USING btree ("booking_id");--> statement-breakpoint
+CREATE INDEX "refunds_booking_idx" ON "booking"."refunds" USING btree ("booking_id");--> statement-breakpoint
+CREATE INDEX "stay_bookings_listing_idx" ON "booking"."stay_bookings" USING btree ("listing_id","check_in");--> statement-breakpoint
+CREATE INDEX "stay_bookings_host_idx" ON "booking"."stay_bookings" USING btree ("host_id","check_in");--> statement-breakpoint
+CREATE UNIQUE INDEX "reviews_booking_idx" ON "booking"."reviews" USING btree ("booking_id");--> statement-breakpoint
+CREATE INDEX "reviews_listing_idx" ON "booking"."reviews" USING btree ("listing_id","created_at");--> statement-breakpoint
+CREATE INDEX "search_log_kind_created_idx" ON "booking"."search_log" USING btree ("kind","created_at");

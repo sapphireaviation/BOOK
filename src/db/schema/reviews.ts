@@ -1,10 +1,11 @@
-import { index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, integer, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { booking } from "./pg-schema";
 import { user } from "./auth";
 import { bookings } from "./bookings";
 import { listings } from "./listings";
 
 /** One review per completed stay booking, so every review is from a real guest. */
-export const reviews = pgTable(
+export const reviews = booking.table(
   "reviews",
   {
     id: text("id").primaryKey(),

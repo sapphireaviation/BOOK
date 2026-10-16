@@ -1,12 +1,12 @@
 {
-  "id": "d7e65417-d6dd-4300-8e43-5a6393a51aa2",
-  "prevId": "6f64e082-3a25-4368-8573-28b60524e6f8",
+  "id": "0a12ed08-839b-4779-a105-2362f8818cd8",
+  "prevId": "ab4a0e5f-ad2e-4439-92ef-bf2e20317e7e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.account": {
+    "booking.account": {
       "name": "account",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -114,6 +114,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -127,9 +128,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.session": {
+    "booking.session": {
       "name": "session",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -207,6 +208,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -228,9 +230,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
+    "booking.user": {
       "name": "user",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -266,7 +268,7 @@
         "role": {
           "name": "role",
           "type": "user_role",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'traveler'"
@@ -308,9 +310,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.verification": {
+    "booking.verification": {
       "name": "verification",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -359,9 +361,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.airports": {
+    "booking.airports": {
       "name": "airports",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "iata": {
           "name": "iata",
@@ -458,9 +460,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.destinations": {
+    "booking.destinations": {
       "name": "destinations",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "slug": {
           "name": "slug",
@@ -589,9 +591,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.flight_routes": {
+    "booking.flight_routes": {
       "name": "flight_routes",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "slug": {
           "name": "slug",
@@ -648,6 +650,7 @@
             "origin"
           ],
           "tableTo": "airports",
+          "schemaTo": "booking",
           "columnsTo": [
             "iata"
           ],
@@ -661,6 +664,7 @@
             "destination"
           ],
           "tableTo": "airports",
+          "schemaTo": "booking",
           "columnsTo": [
             "iata"
           ],
@@ -674,9 +678,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.host_profiles": {
+    "booking.host_profiles": {
       "name": "host_profiles",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -766,6 +770,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -779,9 +784,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.listing_photos": {
+    "booking.listing_photos": {
       "name": "listing_photos",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -866,6 +871,7 @@
             "listing_id"
           ],
           "tableTo": "listings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -879,9 +885,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.listing_units": {
+    "booking.listing_units": {
       "name": "listing_units",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -1010,6 +1016,7 @@
             "listing_id"
           ],
           "tableTo": "listings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1023,9 +1030,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.listings": {
+    "booking.listings": {
       "name": "listings",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -1042,7 +1049,7 @@
         "kind": {
           "name": "kind",
           "type": "listing_kind",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'stay'"
@@ -1050,7 +1057,7 @@
         "status": {
           "name": "status",
           "type": "listing_status",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'draft'"
@@ -1084,7 +1091,7 @@
         "property_type": {
           "name": "property_type",
           "type": "property_type",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'homestay'"
@@ -1251,7 +1258,7 @@
         "cancellation_policy": {
           "name": "cancellation_policy",
           "type": "cancellation_policy",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'moderate'"
@@ -1284,6 +1291,13 @@
         },
         "verified": {
           "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_demo": {
+          "name": "is_demo",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -1392,6 +1406,7 @@
             "host_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1413,9 +1428,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.unit_inventory": {
+    "booking.unit_inventory": {
       "name": "unit_inventory",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "unit_id": {
           "name": "unit_id",
@@ -1465,6 +1480,7 @@
             "unit_id"
           ],
           "tableTo": "listing_units",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1486,9 +1502,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.wishlists": {
+    "booking.wishlists": {
       "name": "wishlists",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -1519,6 +1535,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1532,6 +1549,7 @@
             "listing_id"
           ],
           "tableTo": "listings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1553,9 +1571,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bookings": {
+    "booking.bookings": {
       "name": "bookings",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -1572,14 +1590,14 @@
         "kind": {
           "name": "kind",
           "type": "booking_kind",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true
         },
         "status": {
           "name": "status",
           "type": "booking_status",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'draft'"
@@ -1746,6 +1764,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1767,9 +1786,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.flight_bookings": {
+    "booking.flight_bookings": {
       "name": "flight_bookings",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "booking_id": {
           "name": "booking_id",
@@ -1884,6 +1903,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -1897,9 +1917,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.payment_events": {
+    "booking.payment_events": {
       "name": "payment_events",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -1910,7 +1930,7 @@
         "provider": {
           "name": "provider",
           "type": "payment_provider",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true
         },
@@ -1942,9 +1962,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.payments": {
+    "booking.payments": {
       "name": "payments",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -1961,14 +1981,14 @@
         "provider": {
           "name": "provider",
           "type": "payment_provider",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true
         },
         "status": {
           "name": "status",
           "type": "payment_status",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'created'"
@@ -2077,6 +2097,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2090,9 +2111,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.payouts": {
+    "booking.payouts": {
       "name": "payouts",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -2127,7 +2148,7 @@
         "status": {
           "name": "status",
           "type": "payout_status",
-          "typeSchema": "public",
+          "typeSchema": "booking",
           "primaryKey": false,
           "notNull": true,
           "default": "'owed'"
@@ -2204,6 +2225,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2217,6 +2239,7 @@
             "host_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2230,9 +2253,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.refunds": {
+    "booking.refunds": {
       "name": "refunds",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -2316,6 +2339,7 @@
             "payment_id"
           ],
           "tableTo": "payments",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2329,6 +2353,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2342,9 +2367,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.stay_bookings": {
+    "booking.stay_bookings": {
       "name": "stay_bookings",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "booking_id": {
           "name": "booking_id",
@@ -2473,6 +2498,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2486,6 +2512,7 @@
             "listing_id"
           ],
           "tableTo": "listings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2499,6 +2526,7 @@
             "unit_id"
           ],
           "tableTo": "listing_units",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2512,6 +2540,7 @@
             "host_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2525,9 +2554,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.reviews": {
+    "booking.reviews": {
       "name": "reviews",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -2662,6 +2691,7 @@
             "booking_id"
           ],
           "tableTo": "bookings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2675,6 +2705,7 @@
             "listing_id"
           ],
           "tableTo": "listings",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2688,6 +2719,7 @@
             "user_id"
           ],
           "tableTo": "user",
+          "schemaTo": "booking",
           "columnsTo": [
             "id"
           ],
@@ -2701,9 +2733,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.email_log": {
+    "booking.email_log": {
       "name": "email_log",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -2763,9 +2795,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.rate_limits": {
+    "booking.rate_limits": {
       "name": "rate_limits",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "key": {
           "name": "key",
@@ -2795,9 +2827,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.search_log": {
+    "booking.search_log": {
       "name": "search_log",
-      "schema": "",
+      "schema": "booking",
       "columns": {
         "id": {
           "name": "id",
@@ -2877,18 +2909,18 @@
     }
   },
   "enums": {
-    "public.user_role": {
+    "booking.user_role": {
       "name": "user_role",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "traveler",
         "host",
         "admin"
       ]
     },
-    "public.cancellation_policy": {
+    "booking.cancellation_policy": {
       "name": "cancellation_policy",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "flexible",
         "moderate",
@@ -2896,18 +2928,18 @@
         "non_refundable"
       ]
     },
-    "public.listing_kind": {
+    "booking.listing_kind": {
       "name": "listing_kind",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "stay",
         "experience",
         "transport"
       ]
     },
-    "public.listing_status": {
+    "booking.listing_status": {
       "name": "listing_status",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "draft",
         "published",
@@ -2915,9 +2947,9 @@
         "archived"
       ]
     },
-    "public.property_type": {
+    "booking.property_type": {
       "name": "property_type",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "hotel",
         "guesthouse",
@@ -2931,17 +2963,17 @@
         "other"
       ]
     },
-    "public.booking_kind": {
+    "booking.booking_kind": {
       "name": "booking_kind",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "stay",
         "flight"
       ]
     },
-    "public.booking_status": {
+    "booking.booking_status": {
       "name": "booking_status",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "draft",
         "pending_payment",
@@ -2953,18 +2985,19 @@
         "failed"
       ]
     },
-    "public.payment_provider": {
+    "booking.payment_provider": {
       "name": "payment_provider",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "razorpay",
         "stripe",
-        "manual"
+        "manual",
+        "test"
       ]
     },
-    "public.payment_status": {
+    "booking.payment_status": {
       "name": "payment_status",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "created",
         "authorized",
@@ -2974,9 +3007,9 @@
         "partially_refunded"
       ]
     },
-    "public.payout_status": {
+    "booking.payout_status": {
       "name": "payout_status",
-      "schema": "public",
+      "schema": "booking",
       "values": [
         "owed",
         "scheduled",
@@ -2985,7 +3018,9 @@
       ]
     }
   },
-  "schemas": {},
+  "schemas": {
+    "booking": "booking"
+  },
   "views": {},
   "sequences": {},
   "roles": {},

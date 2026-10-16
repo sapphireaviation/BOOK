@@ -51,8 +51,8 @@ export async function getIndexableDestinations(limit = 5000): Promise<SeoDestina
              min(nullif(l.from_price, 0)) as from_price,
              min(l.currency) as currency,
              greatest(d.updated_at, coalesce(max(l.updated_at), d.updated_at)) as updated_at
-      from destinations d
-      join listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
+      from booking.destinations d
+      join booking.listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
       group by d.slug
       having count(l.id) >= ${MIN_LISTINGS_FOR_DESTINATION}
       order by count(l.id) desc, d.name
@@ -77,9 +77,9 @@ export async function getRoutes(limit = 5000): Promise<SeoRoute[]> {
   return safely("routes", async () => {
     const rows = await db.execute<{ slug: string; origin: string; destination: string; origin_city: string; destination_city: string; updated_at: Date | string }>(sql`
       select r.slug, r.origin, r.destination, o.city as origin_city, t.city as destination_city, r.updated_at
-      from flight_routes r
-      join airports o on o.iata = r.origin
-      join airports t on t.iata = r.destination
+      from booking.flight_routes r
+      join booking.airports o on o.iata = r.origin
+      join booking.airports t on t.iata = r.destination
       order by (o.popularity + t.popularity) desc, r.slug
       limit ${limit}`);
     return rows.map((r) => ({
@@ -98,7 +98,7 @@ export async function countPublishedListings(): Promise<number> {
   cacheLife("hours");
   cacheTag("seo", "listings");
   const [row] = await safely("listing count", async () =>
-    db.execute<{ n: string }>(sql`select count(*) as n from listings where status = 'published' and kind = 'stay'`),
+    db.execute<{ n: string }>(sql`select count(*) as n from booking.listings where status = 'published' and kind = 'stay'`),
   );
   return row ? Number(row.n) : 0;
 }
@@ -110,7 +110,7 @@ export async function getListingPaths(chunk: number): Promise<SeoListing[]> {
   cacheTag("seo", "listings");
   return safely("listings", async () => {
     const rows = await db.execute<{ slug: string; destination_slug: string | null; city: string; updated_at: Date | string }>(sql`
-      select slug, destination_slug, city, updated_at from listings
+      select slug, destination_slug, city, updated_at from booking.listings
       where status = 'published' and kind = 'stay'
       order by id
       offset ${chunk * LISTINGS_PER_SITEMAP} limit ${LISTINGS_PER_SITEMAP}`);

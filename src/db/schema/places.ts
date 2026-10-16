@@ -1,7 +1,8 @@
-import { doublePrecision, index, integer, jsonb, pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { doublePrecision, index, integer, jsonb, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { booking } from "./pg-schema";
 
 /** Seeded from OurAirports (public domain). Only airports with an IATA code and scheduled service. */
-export const airports = pgTable(
+export const airports = booking.table(
   "airports",
   {
     iata: text("iata").primaryKey(),
@@ -19,7 +20,7 @@ export const airports = pgTable(
 );
 
 /** Curated places used for stay search and destination SEO pages. */
-export const destinations = pgTable(
+export const destinations = booking.table(
   "destinations",
   {
     slug: text("slug").primaryKey(),
@@ -44,7 +45,7 @@ export const destinations = pgTable(
 );
 
 /** Popular flight routes that get an SEO page. */
-export const routes = pgTable("flight_routes", {
+export const routes = booking.table("flight_routes", {
   slug: text("slug").primaryKey(), // e.g. "delhi-to-goa"
   origin: text("origin")
     .notNull()

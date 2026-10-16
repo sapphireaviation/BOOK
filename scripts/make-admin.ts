@@ -20,7 +20,7 @@ async function main() {
   }
   const sql = postgres(url, { prepare: false, max: 1 });
   try {
-    const found = await sql<{ id: string; role: string }[]>`select id, role from "user" where lower(email) = ${email} limit 1`;
+    const found = await sql<{ id: string; role: string }[]>`select id, role from booking."user" where lower(email) = ${email} limit 1`;
     if (!found.length) {
       console.error(`No account with the email ${email}. Ask them to sign up first, then run this again.`);
       process.exitCode = 1;
@@ -31,7 +31,7 @@ async function main() {
       console.log(`${email} is already an admin.`);
       return;
     }
-    await sql`update "user" set role = 'admin', updated_at = now() where id = ${u.id}`;
+    await sql`update booking."user" set role = 'admin', updated_at = now() where id = ${u.id}`;
     console.log(`${email} is now an admin (was ${u.role}). They may need to reload the page.`);
   } finally {
     await sql.end();

@@ -7,7 +7,7 @@ Everything needed to take the site from this repository to a live domain. Steps 
 1. Create a Supabase project for this product only (Settings: region `ap-south-1` Mumbai for India traffic). The organization is on the free plan, which allows two active projects; pause or upgrade as needed.
 2. Copy the **transaction pooler** connection string (port 6543). This is `DATABASE_URL`.
 3. From your machine: `DATABASE_URL=<that url> pnpm db:migrate`, then `DATABASE_URL=<that url> pnpm db:seed` (airports, flight routes and destinations; never pass `--demo` in production).
-4. In the Supabase dashboard confirm Row Level Security is enabled on every table (migration `0001` enables it with no policies, so the public REST API exposes nothing; the app connects as the database owner).
+4. In the Supabase dashboard confirm Row Level Security is enabled on every table in the `booking` schema (all app tables live in the `booking` schema, see decision 0005; migration `0001` enables it with no policies, so the public REST API exposes nothing; the app connects as the database owner).
 
 ## 2. Accounts and keys
 

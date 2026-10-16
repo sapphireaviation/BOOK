@@ -78,9 +78,9 @@ export async function holdInventory(tx: Tx, input: HoldInput): Promise<boolean> 
   try {
     await tx.transaction(async (sp) => {
       await sp.execute(sql`
-        insert into unit_inventory (unit_id, date)
+        insert into booking.unit_inventory (unit_id, date)
         select lu.id, d::date
-        from listing_units lu
+        from booking.listing_units lu
         cross join generate_series(${input.checkIn}::date, ${input.checkOut}::date - 1, interval '1 day') as d
         where lu.id = ${input.unitId}
         on conflict do nothing
@@ -90,8 +90,8 @@ export async function holdInventory(tx: Tx, input: HoldInput): Promise<boolean> 
         select ui.date::text as date,
                coalesce(ui.total, lu.quantity) - ui.booked as free,
                ui.closed
-        from unit_inventory ui
-        join listing_units lu on lu.id = ui.unit_id
+        from booking.unit_inventory ui
+        join booking.listing_units lu on lu.id = ui.unit_id
         where ui.unit_id = ${input.unitId}
           and ui.date >= ${input.checkIn}::date
           and ui.date < ${input.checkOut}::date
@@ -103,7 +103,7 @@ export async function holdInventory(tx: Tx, input: HoldInput): Promise<boolean> 
       for (const r of rows) if (r.closed || Number(r.free) < input.units) throw new HoldRejected();
 
       await sp.execute(sql`
-        update unit_inventory
+        update booking.unit_inventory
         set booked = booked + ${input.units}
         where unit_id = ${input.unitId}
           and date >= ${input.checkIn}::date
@@ -121,7 +121,7 @@ export async function holdInventory(tx: Tx, input: HoldInput): Promise<boolean> 
 export async function releaseInventory(tx: Tx, input: HoldInput): Promise<void> {
   if (!validHold(input)) return;
   await tx.execute(sql`
-    update unit_inventory
+    update booking.unit_inventory
     set booked = greatest(booked - ${input.units}, 0)
     where unit_id = ${input.unitId}
       and date >= ${input.checkIn}::date

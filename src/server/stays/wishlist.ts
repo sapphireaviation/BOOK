@@ -65,13 +65,13 @@ export async function listSaved(userId: string): Promise<SavedListing[]> {
     saved_at: string;
   }>(sql`
     select l.id, l.slug, l.title, l.summary, l.property_type, l.city, l.destination_slug, l.country_code, l.currency,
-           coalesce((select min(u.base_price) from listing_units u where u.listing_id = l.id and u.active), l.from_price) as from_price,
+           coalesce((select min(u.base_price) from booking.listing_units u where u.listing_id = l.id and u.active), l.from_price) as from_price,
            l.rating_avg, l.rating_count, l.is_demo, l.status,
-           (select json_build_object('url', p.url, 'alt', p.alt) from listing_photos p
+           (select json_build_object('url', p.url, 'alt', p.alt) from booking.listing_photos p
               where p.listing_id = l.id order by p.position, p.id limit 1) as photo,
            to_char(w.created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as saved_at
-    from wishlists w
-    join listings l on l.id = w.listing_id
+    from booking.wishlists w
+    join booking.listings l on l.id = w.listing_id
     where w.user_id = ${userId}
     order by w.created_at desc
     limit 200

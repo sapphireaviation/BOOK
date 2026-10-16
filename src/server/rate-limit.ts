@@ -47,16 +47,16 @@ export async function consume(key: string, policy: BucketPolicy, cost = 1): Prom
     // Imported lazily so the bucket arithmetic above can be unit tested without a database.
     const { db } = await import("@/db");
     return await db.transaction(async (tx) => {
-      await tx.execute(sql`insert into rate_limits (key, tokens, updated_at) values (${key}, ${capacityMilli}, now()) on conflict (key) do nothing`);
+      await tx.execute(sql`insert into booking.rate_limits (key, tokens, updated_at) values (${key}, ${capacityMilli}, now()) on conflict (key) do nothing`);
       const rows = await tx.execute<{ tokens: number; elapsed_ms: string }>(
-        sql`select tokens, (extract(epoch from (clock_timestamp() - updated_at)) * 1000)::bigint as elapsed_ms from rate_limits where key = ${key} for update`,
+        sql`select tokens, (extract(epoch from (clock_timestamp() - updated_at)) * 1000)::bigint as elapsed_ms from booking.rate_limits where key = ${key} for update`,
       );
       const row = rows[0];
       const result = refillBucket({ tokensMilli: Number(row?.tokens ?? capacityMilli), elapsedMs: Number(row?.elapsed_ms ?? 0), cost }, policy);
-      await tx.execute(sql`update rate_limits set tokens = ${result.tokensMilli}, updated_at = clock_timestamp() where key = ${key}`);
+      await tx.execute(sql`update booking.rate_limits set tokens = ${result.tokensMilli}, updated_at = clock_timestamp() where key = ${key}`);
       if (Math.random() < 0.01) {
         // Occasional cleanup of buckets idle for a day; a full bucket and a missing row behave the same.
-        await tx.execute(sql`delete from rate_limits where updated_at < now() - interval '1 day'`);
+        await tx.execute(sql`delete from booking.rate_limits where updated_at < now() - interval '1 day'`);
       }
       return { ok: result.ok, remaining: Math.floor(result.tokensMilli / 1000), retryAfter: result.retryAfter, limit: policy.capacity };
     });

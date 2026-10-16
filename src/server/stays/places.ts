@@ -37,8 +37,8 @@ export async function listDestinations(): Promise<DestinationSummary[]> {
            count(l.id)::int as listing_count,
            min(l.from_price)::text as from_price,
            mode() within group (order by l.currency) as currency
-    from destinations d
-    left join listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
+    from booking.destinations d
+    left join booking.listings l on l.destination_slug = d.slug and l.status = 'published' and l.kind = 'stay'
     group by d.slug
     order by (d.country_code = 'IN') desc, count(l.id) desc, d.featured desc, d.name
   `);
@@ -188,19 +188,19 @@ export async function getPlacePage(slug: string): Promise<PlacePage | null> {
     summary: string | null;
     nearest_airports: string[];
     updated_at: string;
-  }>(sql`select slug, name, region, country_code, country_name, lat, lng, summary, nearest_airports, to_char(updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at from destinations where slug = ${slug}`);
+  }>(sql`select slug, name, region, country_code, country_name, lat, lng, summary, nearest_airports, to_char(updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at from booking.destinations where slug = ${slug}`);
 
   const where = dest ? sql`l.destination_slug = ${slug}` : sql`l.destination_slug is null and ${SLUG_OF_CITY} = ${slug}`;
 
   const rows = await db.execute<ListingRow>(sql`
     select l.id, l.slug, l.title, l.summary, l.property_type, l.locality, l.city, l.destination_slug, l.lat, l.lng,
            l.max_guests, l.bedrooms, l.currency, l.instant_book, l.cancellation_policy, l.is_demo, l.country_code, to_char(l.updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at,
-           coalesce((select min(u.base_price) from listing_units u where u.listing_id = l.id and u.active), l.from_price) as from_price,
+           coalesce((select min(u.base_price) from booking.listing_units u where u.listing_id = l.id and u.active), l.from_price) as from_price,
            coalesce(r.n, 0)::int as review_count, r.avg as review_avg,
-           (select json_build_object('url', p.url, 'alt', p.alt) from listing_photos p
+           (select json_build_object('url', p.url, 'alt', p.alt) from booking.listing_photos p
               where p.listing_id = l.id order by p.position, p.id limit 1) as photo
-    from listings l
-    left join lateral (select count(*) as n, avg(rating)::float8 as avg from reviews where listing_id = l.id) r on true
+    from booking.listings l
+    left join lateral (select count(*) as n, avg(rating)::float8 as avg from booking.reviews where listing_id = l.id) r on true
     where l.status = 'published' and l.kind = 'stay' and ${where}
     order by l.is_demo asc, coalesce(r.n, 0) desc, l.title
     limit ${MAX_LISTINGS}::int
@@ -235,7 +235,7 @@ export async function getPlacePage(slug: string): Promise<PlacePage | null> {
   let airports: { code: string; name: string | null }[] = [];
   if (dest?.nearest_airports?.length) {
     const named = await db.execute<{ iata: string; name: string }>(
-      sql`select iata, name from airports where iata in (${sql.join(
+      sql`select iata, name from booking.airports where iata in (${sql.join(
         dest.nearest_airports.map((c) => sql`${c}`),
         sql`, `,
       )})`,

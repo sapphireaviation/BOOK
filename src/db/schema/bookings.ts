@@ -1,9 +1,10 @@
-import { date, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { date, index, integer, jsonb, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { booking } from "./pg-schema";
 import { user } from "./auth";
 import { listings, listingUnits } from "./listings";
 
-export const bookingKind = pgEnum("booking_kind", ["stay", "flight"]);
-export const bookingStatus = pgEnum("booking_status", [
+export const bookingKind = booking.enum("booking_kind", ["stay", "flight"]);
+export const bookingStatus = booking.enum("booking_status", [
   "draft",
   "pending_payment",
   "confirmed",
@@ -14,13 +15,13 @@ export const bookingStatus = pgEnum("booking_status", [
   "failed",
 ]);
 /** "test" is the simulated provider used in development and when ALLOW_TEST_PAYMENTS=true. */
-export const paymentProvider = pgEnum("payment_provider", ["razorpay", "stripe", "manual", "test"]);
-export const paymentStatus = pgEnum("payment_status", ["created", "authorized", "captured", "failed", "refunded", "partially_refunded"]);
+export const paymentProvider = booking.enum("payment_provider", ["razorpay", "stripe", "manual", "test"]);
+export const paymentStatus = booking.enum("payment_status", ["created", "authorized", "captured", "failed", "refunded", "partially_refunded"]);
 
 /** Price lines shown to the traveler. The fee line is always present and always 0. */
 export type PriceLine = { label: string; amount: number; kind: "base" | "tax" | "fee" | "discount" | "other" };
 
-export const bookings = pgTable(
+export const bookings = booking.table(
   "bookings",
   {
     id: text("id").primaryKey(),
@@ -55,7 +56,7 @@ export const bookings = pgTable(
   ],
 );
 
-export const stayBookings = pgTable(
+export const stayBookings = booking.table(
   "stay_bookings",
   {
     bookingId: text("booking_id")
@@ -98,7 +99,7 @@ export type Passenger = {
   phone: string;
 };
 
-export const flightBookings = pgTable(
+export const flightBookings = booking.table(
   "flight_bookings",
   {
     bookingId: text("booking_id")
@@ -124,7 +125,7 @@ export const flightBookings = pgTable(
   (t) => [index("flight_bookings_order_idx").on(t.providerOrderId)],
 );
 
-export const payments = pgTable(
+export const payments = booking.table(
   "payments",
   {
     id: text("id").primaryKey(),
@@ -151,7 +152,7 @@ export const payments = pgTable(
 );
 
 /** Webhook idempotency log. */
-export const paymentEvents = pgTable("payment_events", {
+export const paymentEvents = booking.table("payment_events", {
   id: text("id").primaryKey(), // provider event id, prefixed with provider name
   provider: paymentProvider("provider").notNull(),
   type: text("type").notNull(),
@@ -159,7 +160,7 @@ export const paymentEvents = pgTable("payment_events", {
   processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const refunds = pgTable(
+export const refunds = booking.table(
   "refunds",
   {
     id: text("id").primaryKey(),
@@ -179,10 +180,10 @@ export const refunds = pgTable(
   (t) => [index("refunds_booking_idx").on(t.bookingId)],
 );
 
-export const payoutStatus = pgEnum("payout_status", ["owed", "scheduled", "paid", "cancelled"]);
+export const payoutStatus = booking.enum("payout_status", ["owed", "scheduled", "paid", "cancelled"]);
 
 /** What we owe a host for a stay booking. 100% of the room total and taxes; we keep nothing. */
-export const payouts = pgTable(
+export const payouts = booking.table(
   "payouts",
   {
     id: text("id").primaryKey(),

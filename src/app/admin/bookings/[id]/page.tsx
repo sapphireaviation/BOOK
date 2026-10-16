@@ -14,6 +14,12 @@ import { AccessError, requireAdminPage } from "@/server/host/access";
 export const instant = false;
 export const metadata: Metadata = { title: "Booking" };
 
+const PROVIDERS: Record<string, string> = { razorpay: "Razorpay", stripe: "Stripe", test: "Test payments", duffel: "Duffel" };
+
+function providerName(p: string) {
+  return PROVIDERS[p] ?? humanStatus(p);
+}
+
 function dateTime(d: Date) {
   return `${formatDate(d)}, ${formatTime(d.toISOString(), "UTC")} UTC`;
 }
@@ -25,7 +31,7 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
     if (err instanceof AccessError) notFound();
     throw err;
   });
-  const { booking: b, stay, flight, payments, refunds, payout } = data;
+  const { booking: b, stay, flight, payments, refunds, payout, account, host } = data;
   const cancellable = (CANCELLABLE as readonly string[]).includes(b.status);
   const policy = stay ? cancellationPolicyText[stay.cancellationPolicy] : null;
 
@@ -37,8 +43,32 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
           <DetailList
             items={[
               { label: "Kind", value: b.kind === "stay" ? "Stay" : "Flight" },
-              { label: "Contact", value: `${b.contactName}, ${b.contactEmail}${b.contactPhone ? `, ${b.contactPhone}` : ""}` },
-              { label: "Account", value: b.userId ? b.userId : "Guest checkout" },
+              {
+                label: "Guest",
+                value: (
+                  <>
+                    {b.contactName}
+                    <a href={`mailto:${b.contactEmail}`} className="link block w-fit">
+                      {b.contactEmail}
+                    </a>
+                    {b.contactPhone && (
+                      <a href={`tel:${b.contactPhone.replace(/\s+/g, "")}`} className="link block w-fit">
+                        {b.contactPhone}
+                      </a>
+                    )}
+                  </>
+                ),
+              },
+              {
+                label: "Account",
+                value: account ? (
+                  <Link href={`/admin/users?q=${encodeURIComponent(account.email)}`} className="link">
+                    {account.email}
+                  </Link>
+                ) : (
+                  "Booked without an account"
+                ),
+              },
               { label: "Created", value: dateTime(b.createdAt) },
               ...(b.confirmedAt ? [{ label: "Confirmed", value: dateTime(b.confirmedAt) }] : []),
               ...(b.cancelledAt ? [{ label: "Cancelled", value: `${dateTime(b.cancelledAt)}${b.cancelReason ? `. ${b.cancelReason}` : ""}` }] : []),
@@ -61,9 +91,22 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
                       </Link>
                     ),
                   },
+                  {
+                    label: "Host",
+                    value: host ? (
+                      <Link href={`/admin/users?q=${encodeURIComponent(host.email)}`} className="link">
+                        {host.name || host.email}
+                      </Link>
+                    ) : (
+                      "Unknown"
+                    ),
+                  },
                   { label: "Room", value: `${stay.units > 1 ? `${stay.units} x ` : ""}${stay.unitName}` },
                   { label: "Dates", value: `${formatDay(stay.checkIn)} to ${formatDay(stay.checkOut)}, ${stay.nights} ${stay.nights === 1 ? "night" : "nights"}` },
-                  { label: "Guests", value: `${stay.adults} adults${stay.children ? `, ${stay.children} children` : ""}` },
+                  {
+                    label: "Guests",
+                    value: `${stay.adults} ${stay.adults === 1 ? "adult" : "adults"}${stay.children ? `, ${stay.children} ${stay.children === 1 ? "child" : "children"}` : ""}`,
+                  },
                   { label: "Policy", value: policy ? `${policy.label}. ${policy.summary}` : stay.cancellationPolicy },
                   ...(stay.guestNote ? [{ label: "Guest note", value: stay.guestNote }] : []),
                 ]}
@@ -82,7 +125,7 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
                   { label: "Departs", value: dateTime(flight.departAt) },
                   ...(flight.returnAt ? [{ label: "Returns", value: dateTime(flight.returnAt) }] : []),
                   { label: "Airline reference", value: flight.airlineReference ?? "Not ticketed yet" },
-                  { label: "Provider order", value: flight.providerOrderId ? `${flight.provider} ${flight.providerOrderId}` : flight.provider },
+                  { label: "Provider order", value: flight.providerOrderId ? `${providerName(flight.provider)} ${flight.providerOrderId}` : providerName(flight.provider) },
                   { label: "Passengers", value: flight.passengers.map((p) => `${p.givenName} ${p.familyName}`).join(", ") || "None recorded" },
                 ]}
               />
@@ -109,9 +152,13 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
                 <tbody>
                   {payments.map((p) => (
                     <tr key={p.id}>
-                      <Td>Payment{p.method ? `, ${p.method}` : ""}</Td>
+                      <Td>
+                        Payment
+                        {p.method && <span className="block text-xs text-slate">{humanStatus(p.method)}</span>}
+                      </Td>
                       <Td className="break-all">
-                        {p.provider} {p.providerPaymentId ?? p.providerOrderId ?? ""}
+                        {providerName(p.provider)}
+                        <span className="block text-xs text-slate">{p.providerPaymentId ?? p.providerOrderId ?? ""}</span>
                         {p.failureReason && <span className="block text-xs text-signal">{p.failureReason}</span>}
                       </Td>
                       <Td>{humanStatus(p.status)}</Td>
@@ -154,18 +201,24 @@ export default async function AdminBookingPage({ params }: PageProps<"/admin/boo
               </div>
               <p className="mt-1 text-slate">
                 {humanStatus(payout.status)}
-                {payout.paidAt ? `, paid ${formatDate(payout.paidAt)}` : `, from ${formatDay(payout.releaseOn)}`}
+                {payout.paidAt
+                  ? ` on ${formatDate(payout.paidAt)}`
+                  : payout.status === "owed" || payout.status === "scheduled"
+                    ? `. Due on or after ${formatDay(payout.releaseOn)}`
+                    : ""}
                 {payout.providerTransferId ? `. Reference ${payout.providerTransferId}` : ""}
               </p>
             </div>
           )}
           <div className="rounded-md border border-line bg-surface p-4">
             <h2 className="mb-3 text-base">Cancel</h2>
-            {cancellable ? (
-              <CancelBookingForm bookingId={b.id} currency={b.currency} totalLabel={formatMoney({ amount: b.total, currency: b.currency })} />
-            ) : (
-              <p className="text-sm text-slate">A booking that is {humanStatus(b.status).toLowerCase()} cannot be cancelled.</p>
-            )}
+            <CancelBookingForm
+              bookingId={b.id}
+              currency={b.currency}
+              totalLabel={formatMoney({ amount: b.total, currency: b.currency })}
+              cancellable={cancellable}
+              statusLabel={humanStatus(b.status).toLowerCase()}
+            />
           </div>
         </aside>
       </div>

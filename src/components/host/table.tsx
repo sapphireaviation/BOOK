@@ -3,8 +3,9 @@ import { Badge, cn } from "@/components/ui";
 /** Plain data table: hairline rows, left aligned text, numbers right aligned with tabular figures. */
 export function Table({ children, className, caption }: { children: React.ReactNode; className?: string; caption?: string }) {
   return (
-    <div className={cn("overflow-x-auto rounded-md border border-line bg-surface", className)}>
-      <table className="w-full border-collapse text-sm">
+    <div className={cn("relative overflow-x-auto rounded-md border border-line bg-surface", className)}>
+      {/* The minimum width keeps columns readable on phones; the wrapper scrolls instead of squeezing them. */}
+      <table className="w-full min-w-[36rem] border-collapse text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
         {children}
       </table>

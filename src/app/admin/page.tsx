@@ -2,25 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Price } from "@/components/ui";
 import { PageHeader } from "@/components/host/shell";
-import { Stat, StatRow } from "@/components/host/table";
+import { Stat, StatRow, Table, Td, Th } from "@/components/host/table";
 import { requireAdminPage } from "@/server/host/access";
 import { adminOverview } from "@/server/admin/overview";
 
 export const instant = false;
 export const metadata: Metadata = { title: "Overview" };
 
-function MoneyList({ items, empty, noun = ["booking", "bookings"] }: { items: { currency: string; amount: number; count: number }[]; empty: string; noun?: [string, string] }) {
-  if (!items.length) return <span className="text-base font-semibold text-slate">{empty}</span>;
+type CurrencyTotal = { currency: string; amount: number; count: number };
+
+function MoneyCell({ item, noun }: { item?: CurrencyTotal; noun: [string, string] }) {
+  if (!item) return <span className="text-slate">None</span>;
   return (
     <>
-      {items.map((i) => (
-        <div key={i.currency}>
-          <Price money={{ amount: i.amount, currency: i.currency }} />
-          <span className="ml-2 text-xs font-semibold text-slate">
-            {i.count} {i.count === 1 ? noun[0] : noun[1]}
-          </span>
-        </div>
-      ))}
+      <Price className="font-semibold" money={{ amount: item.amount, currency: item.currency }} />
+      <span className="block text-xs text-slate">
+        {item.count} {item.count === 1 ? noun[0] : noun[1]}
+      </span>
     </>
   );
 }
@@ -32,6 +30,7 @@ function kinds(c: { stay: number; flight: number }) {
 export default async function AdminOverview() {
   await requireAdminPage("/admin");
   const o = await adminOverview(new Date());
+  const currencies = [...new Set([...o.valueLast30Days, ...o.pendingPayments, ...o.payoutsOwed].map((i) => i.currency))].sort();
 
   return (
     <>
@@ -57,39 +56,49 @@ export default async function AdminOverview() {
         </Stat>
       </StatRow>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <section aria-labelledby="value" className="rounded-md border border-line bg-surface">
-          <h2 id="value" className="border-b border-line px-4 py-3 text-base">
-            Booking value, last 30 days
+      <section aria-labelledby="money" className="mt-8">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="money" className="text-lg">
+            Money by currency
           </h2>
-          <div className="tnum px-4 py-3 text-lg font-bold">
-            <MoneyList items={o.valueLast30Days} empty="No confirmed bookings" />
-          </div>
-          <p className="border-t border-line px-4 py-2.5 text-xs text-slate">Confirmed and completed bookings, by currency.</p>
-        </section>
-        <section aria-labelledby="pending" className="rounded-md border border-line bg-surface">
-          <h2 id="pending" className="border-b border-line px-4 py-3 text-base">
-            Pending payments
-          </h2>
-          <div className="tnum px-4 py-3 text-lg font-bold">
-            <MoneyList items={o.pendingPayments} empty="None" />
-          </div>
-          <p className="border-t border-line px-4 py-2.5 text-xs text-slate">Payment orders created but not captured yet.</p>
-        </section>
-        <section aria-labelledby="owed" className="rounded-md border border-line bg-surface">
-          <h2 id="owed" className="border-b border-line px-4 py-3 text-base">
-            Payouts owed to hosts
-          </h2>
-          <div className="tnum px-4 py-3 text-lg font-bold">
-            <MoneyList items={o.payoutsOwed} empty="Nothing owed" noun={["payout", "payouts"]} />
-          </div>
-          <p className="border-t border-line px-4 py-2.5 text-xs">
-            <Link href="/admin/payouts?status=owed" className="link">
-              Record payouts
-            </Link>
-          </p>
-        </section>
-      </div>
+          <Link href="/admin/payouts?status=owed" className="link text-sm">
+            Record payouts
+          </Link>
+        </div>
+        {currencies.length ? (
+          <>
+            <Table caption="Booking value, pending payments and payouts owed, by currency">
+              <thead>
+                <tr>
+                  <Th>Currency</Th>
+                  <Th numeric>Booked, last 30 days</Th>
+                  <Th numeric>Payments not captured</Th>
+                  <Th numeric>Owed to hosts</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {currencies.map((c) => (
+                  <tr key={c}>
+                    <Td className="font-semibold">{c}</Td>
+                    <Td numeric>
+                      <MoneyCell item={o.valueLast30Days.find((i) => i.currency === c)} noun={["booking", "bookings"]} />
+                    </Td>
+                    <Td numeric>
+                      <MoneyCell item={o.pendingPayments.find((i) => i.currency === c)} noun={["booking", "bookings"]} />
+                    </Td>
+                    <Td numeric>
+                      <MoneyCell item={o.payoutsOwed.find((i) => i.currency === c)} noun={["payout", "payouts"]} />
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <p className="mt-2 text-xs text-slate">Booked counts confirmed and completed bookings. Payments not captured are orders the provider has not confirmed yet.</p>
+          </>
+        ) : (
+          <p className="rounded-md border border-line bg-surface px-4 py-3 text-sm text-slate">No bookings in the last 30 days, no payments waiting and nothing owed to hosts.</p>
+        )}
+      </section>
     </>
   );
 }

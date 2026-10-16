@@ -5,8 +5,25 @@ import { cancelBookingAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui";
 import { ActionForm, MoneyField, SubmitButton, TextAreaField, useFormState } from "@/components/host/form";
 
-export function CancelBookingForm({ bookingId, currency, totalLabel }: { bookingId: string; currency: string; totalLabel: string }) {
+/**
+ * Stays mounted after the booking is cancelled, so the result ("Booking cancelled. ₹16,400 refunded")
+ * is still on screen once the page refreshes and the booking can no longer be cancelled.
+ */
+export function CancelBookingForm({
+  bookingId,
+  currency,
+  totalLabel,
+  cancellable,
+  statusLabel,
+}: {
+  bookingId: string;
+  currency: string;
+  totalLabel: string;
+  cancellable: boolean;
+  statusLabel: string;
+}) {
   const [open, setOpen] = useState(false);
+  if (!cancellable && !open) return <p className="text-sm text-slate">A booking that is {statusLabel} cannot be cancelled.</p>;
   if (!open) {
     return (
       <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
@@ -16,14 +33,14 @@ export function CancelBookingForm({ bookingId, currency, totalLabel }: { booking
   }
   return (
     <ActionForm action={cancelBookingAction.bind(null, bookingId, currency)} aria-label="Cancel booking" className="space-y-4">
-      <TextAreaField name="reason" label="Reason" rows={3} maxLength={500} required hint="The guest sees this in the cancellation email." />
-      <MoneyField
-        name="refund"
-        label="Refund amount"
-        currency={currency}
-        hint={`Leave empty to refund what the cancellation policy allows. The guest paid ${totalLabel}.`}
-      />
-      <Actions onClose={() => setOpen(false)} />
+      {/* Once cancelled, only the result line below the form remains. */}
+      {cancellable && (
+        <>
+          <TextAreaField name="reason" label="Reason" rows={3} maxLength={500} required hint="The guest sees this in the cancellation email." />
+          <MoneyField name="refund" label="Refund amount" currency={currency} hint={`Leave empty to refund what the cancellation policy allows. The guest paid ${totalLabel}.`} />
+          <Actions onClose={() => setOpen(false)} />
+        </>
+      )}
     </ActionForm>
   );
 }

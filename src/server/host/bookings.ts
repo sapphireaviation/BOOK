@@ -42,7 +42,9 @@ function baseQuery() {
 export type HostBookingRow = Awaited<ReturnType<typeof listHostBookings>>[number];
 
 /** What the host is owed for a booking: the payout row when it exists, otherwise the full booking total (we keep nothing). */
-export function amountOwed(row: { total: number; payoutAmount: number | null; status: string }) {
+export function amountOwed(row: { total: number; payoutAmount: number | null; payoutStatus?: string | null; status: string }) {
+  // A cancelled payout keeps its original amount in the table, but nothing is owed on it.
+  if (row.payoutStatus === "cancelled") return 0;
   if (row.status === "cancelled" || row.status === "refunded") return row.payoutAmount ?? 0;
   return row.payoutAmount ?? row.total;
 }

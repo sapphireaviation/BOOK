@@ -46,6 +46,13 @@ export function formatMoney(money: Money, locale = "en-IN") {
   return formatter(money.currency, locale, showCents).format(major);
 }
 
+/** Short form for tight spaces such as a phone width calendar cell: "₹4.5K", "₹1.2L", "$95". */
+export function formatMoneyCompact(money: Money, locale = "en-IN") {
+  return new Intl.NumberFormat(locale, { style: "currency", currency: money.currency, currencyDisplay: "narrowSymbol", notation: "compact", maximumFractionDigits: 1 }).format(
+    toMajor(money.amount, money.currency),
+  );
+}
+
 export function sumMoney(items: Money[], currency: string): Money {
   return { amount: items.reduce((s, m) => s + m.amount, 0), currency };
 }

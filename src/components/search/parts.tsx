@@ -60,7 +60,7 @@ export function Token({
       aria-describedby={error ? errorId : undefined}
       data-invalid={error ? "" : undefined}
       className={cn(
-        "cursor-pointer whitespace-nowrap rounded-sm font-extrabold underline decoration-[0.07em] underline-offset-[0.16em] transition-colors duration-150",
+        "cursor-pointer whitespace-nowrap rounded-sm -my-1 py-1 font-extrabold underline decoration-[0.07em] underline-offset-[0.16em] transition-colors duration-150",
         empty ? "text-slate decoration-dashed hover:text-ink" : "text-sapphire hover:text-sapphire-deep",
         error ? "decoration-signal" : expanded ? "decoration-sapphire" : empty ? "decoration-slate/60" : "decoration-sapphire/40 hover:decoration-sapphire",
       )}
@@ -159,7 +159,7 @@ export function TripType({ oneWay, onChange, size = "md" }: { oneWay: boolean; o
           onClick={() => onChange(o.value)}
           className={cn(
             "rounded-[6px] font-semibold transition-colors duration-150",
-            size === "sm" ? "px-3 py-1 text-sm" : "px-4 py-2 text-sm",
+            size === "sm" ? "h-9 px-3 text-sm" : "h-10 px-4 text-sm",
             oneWay === o.value ? "bg-ink text-paper" : "text-slate hover:text-ink",
           )}
         >

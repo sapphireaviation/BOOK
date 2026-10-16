@@ -172,7 +172,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
         ) : (
           <>
             <details className="mt-4 lg:hidden">
-              <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-md border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-ink [&::-webkit-details-marker]:hidden">
+              <summary className="inline-flex h-10 cursor-pointer list-none items-center rounded-md border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-ink [&::-webkit-details-marker]:hidden">
                 Show map
               </summary>
               <StayMap points={points} center={result.place} label={`Map of stays in ${result.place.name}`} className="mt-3 h-80" rowIdPrefix="stay-" />
@@ -277,7 +277,7 @@ async function UnknownPlace({ place }: { place: string }) {
         <ul className="mt-4 flex flex-wrap gap-2">
           {fallback.map((s) => (
             <li key={s.slug}>
-              <Link href={`/stays/${s.slug}`} className="inline-flex h-9 items-center rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold hover:border-ink">
+              <Link href={`/stays/${s.slug}`} className="inline-flex h-10 items-center rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold hover:border-ink">
                 {s.name}
               </Link>
             </li>

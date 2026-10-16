@@ -58,7 +58,7 @@ export function FlightRow({ offer, travelers }: { offer: Offer; travelers: numbe
       </div>
 
       <details className="group mt-3">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-sm text-sm font-semibold text-sapphire hover:text-sapphire-deep [&::-webkit-details-marker]:hidden">
+        <summary className="inline-flex min-h-10 cursor-pointer list-none items-center gap-1 rounded-sm text-sm font-semibold text-sapphire hover:text-sapphire-deep [&::-webkit-details-marker]:hidden">
           <svg viewBox="0 0 16 16" className="size-4 transition-transform duration-150 group-open:rotate-90" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M6 4l4 4-4 4" />
           </svg>

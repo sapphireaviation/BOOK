@@ -7,7 +7,7 @@ export function Badge({ tone = "neutral", className, children }: { tone?: "neutr
     bad: "bg-signal-wash text-signal",
     info: "bg-sapphire-wash text-sapphire",
   } as const;
-  return <span className={cn("inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-semibold", tones[tone], className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-semibold", tones[tone], className)}>{children}</span>;
 }
 
 export function Skeleton({ className }: { className?: string }) {

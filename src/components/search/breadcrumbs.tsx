@@ -16,7 +16,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
                 <span aria-current="page">{c.name}</span>
               ) : (
                 <>
-                  <Link href={c.path} className="hover:text-ink hover:underline">
+                  <Link href={c.path} className="tap hover:text-ink hover:underline">
                     {c.name}
                   </Link>
                   <span aria-hidden="true">/</span>

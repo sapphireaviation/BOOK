@@ -7,10 +7,10 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
       <div className="container-page flex h-16 items-center gap-3 sm:gap-6">
-        <Wordmark />
+        <Wordmark narrow />
         <MainNav />
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/host" className="hidden rounded-md px-3 py-2 text-sm font-semibold hover:bg-mist md:inline-block">
+          <Link href="/host" className="hidden h-10 items-center rounded-md px-3 text-sm font-semibold hover:bg-mist md:inline-flex">
             List your place
           </Link>
           <AccountMenu />

@@ -137,7 +137,7 @@ async function BookContent({ params, searchParams }: Props) {
             </h2>
             <div className="flex gap-4">
               {photo && (
-                <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-sm bg-mist">
+                <div className="relative h-16 w-20 shrink-0 sm:h-20 sm:w-28 overflow-hidden rounded-sm bg-mist">
                   <Image src={photo.url} alt="" fill sizes="112px" className="object-cover" />
                 </div>
               )}

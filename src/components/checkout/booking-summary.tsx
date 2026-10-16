@@ -37,7 +37,7 @@ export function StatusBadge({ status, className }: { status: BookingRow["status"
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[8rem_1fr] gap-4 border-t border-line py-3 first:border-t-0 sm:grid-cols-[10rem_1fr]">
+    <div className="grid grid-cols-[6.5rem_1fr] gap-3 border-t border-line py-3 first:border-t-0 sm:grid-cols-[10rem_1fr] sm:gap-4">
       <dt className="text-sm text-slate">{label}</dt>
       <dd className="text-sm">{children}</dd>
     </div>

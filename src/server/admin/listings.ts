@@ -77,5 +77,5 @@ export async function moderateListing(actor: Actor, listingId: string, action: M
         .where(eq(listings.id, listingId));
       break;
   }
-  revalidateListing(listingId);
+  await revalidateListing(listingId);
 }

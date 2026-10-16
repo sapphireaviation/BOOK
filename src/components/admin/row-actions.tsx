@@ -16,10 +16,20 @@ function RowStatus() {
   );
 }
 
-function RowSubmit({ children, pendingLabel, variant = "secondary" }: { children: React.ReactNode; pendingLabel: string; variant?: "secondary" | "danger" | "primary" }) {
+function RowSubmit({
+  children,
+  pendingLabel,
+  variant = "secondary",
+  className,
+}: {
+  children: React.ReactNode;
+  pendingLabel: string;
+  variant?: "secondary" | "danger" | "primary";
+  className?: string;
+}) {
   const { pending } = useFormState();
   return (
-    <Button type="submit" size="sm" variant={variant} pending={pending}>
+    <Button type="submit" size="sm" variant={variant} pending={pending} className={className}>
       {pending ? pendingLabel : children}
     </Button>
   );
@@ -38,7 +48,8 @@ export function ModerateListing({ listingId, status, verified }: { listingId: st
       ) : (
         <ActionForm action={action} showStatus={false} aria-label="Suspend listing" className="flex items-center gap-2">
           <input type="hidden" name="action" value="suspend" />
-          <RowSubmit variant="danger" pendingLabel="Suspending">
+          {/* Quiet in a long list of rows; Restore undoes it. */}
+          <RowSubmit pendingLabel="Suspending" className="text-signal">
             Suspend
           </RowSubmit>
           <RowStatus />

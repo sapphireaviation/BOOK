@@ -129,7 +129,7 @@ async function PlaceContent({ params }: { params: Params }) {
           <nav aria-label="Breadcrumb" className="text-sm text-slate">
             <ol className="flex flex-wrap gap-x-2">
               <li>
-                <Link href="/stays" className="hover:text-ink">
+                <Link href="/stays" className="tap hover:text-ink">
                   Stays
                 </Link>
                 <span aria-hidden="true" className="ml-2">
@@ -156,14 +156,16 @@ async function PlaceContent({ params }: { params: Params }) {
         </div>
       </header>
 
-      <section className="container-page border-b border-line py-8" aria-labelledby="dates-title">
-        <h2 id="dates-title" className="text-xl">
-          Check prices for your dates
-        </h2>
-        <div className="mt-4">
-          <Suspense fallback={<div className="h-11" aria-hidden="true" />}>
-            <StaySearchForm layout="bar" initial={{ place: p.slug }} />
-          </Suspense>
+      <section className="border-b border-line" aria-labelledby="dates-title">
+        <div className="container-page py-8">
+          <h2 id="dates-title" className="text-xl">
+            Check prices for your dates
+          </h2>
+          <div className="mt-4">
+            <Suspense fallback={<div className="h-11" aria-hidden="true" />}>
+              <StaySearchForm layout="bar" initial={{ place: p.slug }} />
+            </Suspense>
+          </div>
         </div>
       </section>
 

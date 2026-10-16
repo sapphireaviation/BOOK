@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/search/breadcrumbs";
 import { notFound, permanentRedirect } from "next/navigation";
 import { durationLabel } from "@/components/flights/format";
 import { listJoin, routeFaqs, routeSummary, type RouteFactsInput } from "@/components/flights/route-facts";
@@ -105,27 +106,15 @@ async function RouteContent({ route }: { route: FlightRoute }) {
 
   return (
     <div className="container-page py-8 md:py-12">
-      <nav aria-label="Breadcrumb" className="text-sm">
-        <ol className="flex flex-wrap gap-2 text-slate">
-          <li>
-            <Link href="/" className="link">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link href="/flights" className="link">
-              Flights
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page" className="text-ink">
-            {o.city} to {d.city}
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Flights", path: "/flights" },
+          { name: `${o.city} to ${d.city}`, path },
+        ]}
+      />
 
-      <h1 className="mt-4 text-3xl md:text-4xl">
+      <h1 className="mt-4 text-3xl lg:text-4xl">
         Flights from {o.city} to {d.city}
       </h1>
       <p className="mt-4 max-w-3xl text-lg">{routeSummary(f)}</p>
@@ -201,13 +190,15 @@ async function RouteContent({ route }: { route: FlightRoute }) {
             {[...(reverse ? [reverse] : []), ...fromHere, ...toThere]
               .filter((r, i, arr) => arr.findIndex((x) => x.slug === r.slug) === i)
               .map((r) => (
-                <li key={r.slug} className="flex items-baseline justify-between gap-4 py-3">
-                  <Link href={`/flights/${r.slug}`} className="link font-semibold">
-                    {r.origin.city} to {r.destination.city}
+                <li key={r.slug}>
+                  <Link href={`/flights/${r.slug}`} className="flex items-baseline justify-between gap-4 py-3 hover:text-sapphire">
+                    <span className="font-semibold">
+                      {r.origin.city} to {r.destination.city}
+                    </span>
+                    <span className="text-sm text-slate">
+                      {r.origin.iata} to {r.destination.iata}
+                    </span>
                   </Link>
-                  <span className="text-sm text-slate">
-                    {r.origin.iata} to {r.destination.iata}
-                  </span>
                 </li>
               ))}
           </ul>

@@ -2,7 +2,7 @@ import { useId } from "react";
 import { cn } from "./cn";
 
 export const inputClass =
-  "block w-full rounded-md border border-line-strong bg-surface px-3 h-11 text-base text-ink placeholder:text-slate/70 hover:border-ink focus:border-sapphire focus:outline-none focus:ring-2 focus:ring-sapphire/25 aria-[invalid=true]:border-signal disabled:bg-mist";
+  "block w-full rounded-md border border-line-strong bg-surface px-3 h-11 text-base text-ink placeholder:text-slate/70 hover:border-ink focus:border-sapphire aria-[invalid=true]:border-signal disabled:bg-mist";
 
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(inputClass, className)} {...props} />;

@@ -151,7 +151,7 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl">Sign in</h1>
-        <p className="mt-1 text-sm text-slate">See your trips, save stays and book faster.</p>
+        <p className="mt-1 text-sm text-slate">See your trips and the stays you saved.</p>
       </div>
       {error && <Notice tone="bad">{error}</Notice>}
       <form onSubmit={onSubmit} noValidate className="space-y-4">

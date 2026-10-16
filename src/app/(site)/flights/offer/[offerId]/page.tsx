@@ -137,7 +137,14 @@ async function OfferContent({ params }: { params: PageProps<"/flights/offer/[off
         </div>
         <p className="mt-2 text-slate">
           {back ? `Return, ${formatDay(localDate(out.departAt))} to ${formatDay(localDate(back.departAt))}` : `One way, ${formatDay(localDate(out.departAt))}`}
-          , {passengerCountLabel(pax)}, {cabinLabels[offer.cabinClass ?? "economy"] ?? "Economy"}, sold by {offer.owner.name}
+          , {passengerCountLabel(pax)}, {(cabinLabels[offer.cabinClass ?? "economy"] ?? "Economy").toLowerCase()}, sold by {offer.owner.name}
+        </p>
+        <p className="mt-3 text-base lg:hidden">
+          <span className="tnum font-bold">{formatMoney({ amount: offer.total, currency: offer.currency })}</span>{" "}
+          <span className="text-slate">
+            for {travelers === 1 ? "1 traveler" : `${travelers} travelers`}, with taxes. Platform fee{" "}
+            <span className="rounded-sm bg-runway px-1 font-bold text-ink">{formatMoney({ amount: 0, currency: offer.currency })}</span>
+          </span>
         </p>
 
         <div className="mt-8 space-y-6 rounded-md border border-line bg-surface p-5">

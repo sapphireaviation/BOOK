@@ -75,7 +75,7 @@ All transitions go through `src/server/bookings/transitions.ts` so there is one 
 ## AI surface
 
 - `/llms.txt` and `/llms-full.txt`: what the site offers, how to search, links to key pages.
-- `/api/mcp`: MCP server (Streamable HTTP) with tools `search_flights`, `search_stays`, `get_listing`, `get_flight_offer`, `create_booking_link`.
+- `/api/mcp`: MCP server (Streamable HTTP) with tools `search_flights`, `search_stays`, `get_listing`, `get_flight_offer`, `parse_trip_request`.
 - `/openapi.json`: REST description of `/api/v1/*` for GPT Actions and other agents.
 - `/api/v1/search/stays`, `/api/v1/search/flights`, `/api/v1/listings/:slug`: public JSON endpoints, rate limited.
 - Natural language search: `src/server/ai/parse-query.ts` turns a sentence into structured filters. Uses Anthropic when `ANTHROPIC_API_KEY` is set, otherwise a rule-based parser.

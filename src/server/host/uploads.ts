@@ -41,14 +41,18 @@ export async function storeImage(file: File, opts: { folder: string }): Promise<
   if (file.size > MAX_UPLOAD_BYTES) throw new UploadError(413, "That photo is larger than 10 MB. Export it smaller and try again.");
   if (file.size === 0) throw new UploadError(400, "That file is empty.");
 
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
   let width: number | null = null;
   let height: number | null = null;
+  let bytes: Buffer;
   try {
-    const meta = await sharp(bytes).metadata();
+    const meta = await sharp(original).metadata();
     if (!meta.format || !SHARP_FORMATS[file.type].includes(meta.format)) throw new Error("format mismatch");
     width = meta.autoOrient?.width ?? meta.width ?? null;
     height = meta.autoOrient?.height ?? meta.height ?? null;
+    // Re-encode in the same format with the rotation applied. sharp drops EXIF by default, so the
+    // published photo carries no GPS position, camera serial or capture time from the host's phone.
+    bytes = await reencode(original, file.type);
   } catch {
     throw new UploadError(415, "That file is not a readable image. Try exporting it again as JPEG.");
   }
@@ -57,7 +61,7 @@ export async function storeImage(file: File, opts: { folder: string }): Promise<
 
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     const blob = await put(`listings/${name}`, bytes, { access: "public", contentType: file.type, addRandomSuffix: false });
-    return { url: blob.url, width, height, contentType: file.type, size: file.size };
+    return { url: blob.url, width, height, contentType: file.type, size: bytes.length };
   }
 
   if (process.env.NODE_ENV === "production") {
@@ -68,5 +72,19 @@ export async function storeImage(file: File, opts: { folder: string }): Promise<
   const dir = path.join(process.cwd(), "public", "uploads", path.dirname(name));
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(process.cwd(), "public", "uploads", name), bytes);
-  return { url: `/uploads/${name}`, width, height, contentType: file.type, size: file.size };
+  return { url: `/uploads/${name}`, width, height, contentType: file.type, size: bytes.length };
+}
+
+function reencode(input: Buffer, type: string) {
+  const img = sharp(input).rotate().keepIccProfile();
+  switch (type) {
+    case "image/png":
+      return img.png().toBuffer();
+    case "image/webp":
+      return img.webp({ quality: 90 }).toBuffer();
+    case "image/avif":
+      return img.avif({ quality: 70 }).toBuffer();
+    default:
+      return img.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+  }
 }

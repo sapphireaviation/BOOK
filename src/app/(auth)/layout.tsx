@@ -12,16 +12,16 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <div className="w-full max-w-sm">{children}</div>
       </main>
       <footer className="container-page flex flex-wrap gap-x-5 gap-y-2 border-t border-line py-5 text-xs text-slate">
-        <Link href="/terms" className="hover:text-ink hover:underline">
+        <Link href="/terms" className="tap hover:text-ink hover:underline">
           Terms
         </Link>
-        <Link href="/privacy" className="hover:text-ink hover:underline">
+        <Link href="/privacy" className="tap hover:text-ink hover:underline">
           Privacy
         </Link>
-        <Link href="/help" className="hover:text-ink hover:underline">
+        <Link href="/help" className="tap hover:text-ink hover:underline">
           Help
         </Link>
-        <a href={`mailto:${site.supportEmail}`} className="hover:text-ink hover:underline">
+        <a href={`mailto:${site.supportEmail}`} className="tap hover:text-ink hover:underline">
           {site.supportEmail}
         </a>
       </footer>

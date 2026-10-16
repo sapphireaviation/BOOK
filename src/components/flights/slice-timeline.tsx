@@ -45,7 +45,7 @@ export function SliceTimeline({ slice, label }: { slice: Slice; label?: string }
         <p className="tnum text-xl leading-tight font-extrabold">
           {localClock(slice.arriveAt)}
           {days > 0 && (
-            <sup className="ml-0.5 text-2xs font-bold text-signal">
+            <sup className="ml-0.5 text-2xs font-bold text-ink">
               +{days}
               <span className="sr-only"> {days === 1 ? "day" : "days"}</span>
             </sup>

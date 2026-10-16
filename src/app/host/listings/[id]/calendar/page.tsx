@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ButtonLink, EmptyState, cn } from "@/components/ui";
 import { CalendarGrid } from "@/components/host/editor/calendar-grid";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, formatMoneyCompact } from "@/lib/money";
 import { parseISODate, toISODate } from "@/lib/dates";
 import { getUnitMonth, listUnitsForCalendar } from "@/server/host/calendar";
 import { loadEditor } from "@/server/host/editor";
@@ -75,6 +75,7 @@ export default async function CalendarPage({ params, searchParams }: PageProps<"
             day: d.getUTCDate(),
             weekday: (d.getUTCDay() + 6) % 7,
             priceLabel: formatMoney({ amount: c.price, currency }),
+            priceShort: formatMoneyCompact({ amount: c.price, currency }),
             past: c.date < today,
           };
         })}

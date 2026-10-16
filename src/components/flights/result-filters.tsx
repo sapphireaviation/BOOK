@@ -142,7 +142,7 @@ export function ResultFilters({
 const sorts: { key: FlightSearch["sort"]; label: string }[] = [
   { key: "price", label: "Cheapest" },
   { key: "duration", label: "Fastest" },
-  { key: "depart", label: "Earliest departure" },
+  { key: "depart", label: "Earliest" },
 ];
 
 /** Sort as links so the choice is in the URL. */
@@ -164,7 +164,7 @@ export function SortTabs({ search }: { search: FlightSearch }) {
             href={searchHref({ ...keep, sort: s.key === "price" ? undefined : s.key })}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px border-b-[3px] px-3 py-2.5 text-sm font-semibold",
+              "-mb-px whitespace-nowrap border-b-[3px] px-3 py-2.5 text-sm font-semibold",
               active ? "border-sapphire text-ink" : "border-transparent text-slate hover:text-ink",
             )}
           >

@@ -7,6 +7,7 @@ import { destinations, hostProfiles, listingPhotos, listings, listingUnits, unit
 import { absoluteUrl, site } from "@/config/site";
 import { pingIndexNow } from "@/server/seo/indexnow";
 import { newId } from "@/lib/id";
+import { listingPath, placeSlugOf } from "@/server/stays/paths";
 import { AccessError } from "./access";
 import { ValidationError } from "./errors";
 import {
@@ -129,9 +130,11 @@ function supportedOrDefault(c: string) {
  * Recomputes fromPrice. For a published listing it also keeps the slug unique and in step
  * with the title and city, sets publishedAt the first time, and expires public caches.
  */
-export async function syncListing(listingId: string, opts: { revalidate?: boolean } = {}) {
+export async function syncListing(listingId: string, opts: { revalidate?: boolean; before?: PublicPlace } = {}) {
   const [l] = await db.select().from(listings).where(eq(listings.id, listingId)).limit(1);
   if (!l) return;
+  // The slug changes here, so remember where the listing was public before this write.
+  const before = [opts.before, { slug: l.slug, destinationSlug: l.destinationSlug, city: l.city }];
   const units = await db.select({ basePrice: listingUnits.basePrice, active: listingUnits.active }).from(listingUnits).where(eq(listingUnits.listingId, listingId));
   const patch: Partial<ListingRow> = { fromPrice: computeFromPrice(units), updatedAt: new Date() };
 
@@ -154,21 +157,38 @@ export async function syncListing(listingId: string, opts: { revalidate?: boolea
     }
   }
 
-  if (opts.revalidate !== false && (l.status === "published" || l.publishedAt)) revalidateListing(listingId);
+  if (opts.revalidate !== false && (l.status === "published" || l.publishedAt)) await revalidateListing(listingId, before);
 }
 
-export function revalidateListing(listingId: string) {
-  revalidateTag(`listing:${listingId}`, "max");
-  revalidateTag("listings", "max");
+/** Where a listing shows up in public: its own slug and the destination (or city) page that lists it. */
+export type PublicPlace = { slug: string; destinationSlug: string | null; city: string };
+
+/** Every cache tag that shows this listing at the given place. Matches the cacheTag calls in src/server/stays and src/server/seo. */
+export function listingCacheTags(listingId: string, places: (PublicPlace | null | undefined)[]) {
+  const tags = new Set([`listing:${listingId}`, "listings", "destinations", "seo"]);
+  for (const p of places) {
+    if (!p) continue;
+    if (!p.slug.startsWith("draft-")) tags.add(`listing-slug:${p.slug}`);
+    const place = placeSlugOf(p);
+    if (place) tags.add(`destination:${place}`);
+  }
+  return [...tags];
+}
+
+/**
+ * Expires every public cache entry that shows this listing, at its current place and at any
+ * place passed in `before` (an old slug or destination). Entries expire at once, so the next
+ * visitor, including the host checking their own change, sees the new state.
+ */
+export async function revalidateListing(listingId: string, before: (PublicPlace | null | undefined)[] = []) {
+  const [row] = await db
+    .select({ slug: listings.slug, destinationSlug: listings.destinationSlug, city: listings.city, status: listings.status })
+    .from(listings)
+    .where(eq(listings.id, listingId));
+  for (const tag of listingCacheTags(listingId, [row, ...before])) revalidateTag(tag, { expire: 0 });
+  if (!row || row.slug.startsWith("draft-")) return;
   // Tell search engines about the change once the response is sent.
-  after(async () => {
-    const [row] = await db
-      .select({ slug: listings.slug, destinationSlug: listings.destinationSlug, status: listings.status })
-      .from(listings)
-      .where(eq(listings.id, listingId));
-    if (!row?.destinationSlug || row.slug.startsWith("draft-")) return;
-    await pingIndexNow([absoluteUrl(`/stays/${row.destinationSlug}/${row.slug}`), absoluteUrl(`/stays/${row.destinationSlug}`)]);
-  });
+  after(() => pingIndexNow([absoluteUrl(listingPath(row)), absoluteUrl(`/stays/${placeSlugOf(row)}`)]));
 }
 
 async function uniqueSlug(l: Pick<ListingRow, "id" | "title" | "city" | "slug">) {
@@ -204,7 +224,7 @@ export async function listDestinationsForPicker() {
 }
 
 export async function updateLocation(actor: Actor, listingId: string, input: z.infer<typeof locationSchema>) {
-  await loadManagedListing(actor, listingId);
+  const before = await loadManagedListing(actor, listingId);
   const all = await listDestinationsForPicker();
   let destinationSlug = input.destinationSlug;
   if (destinationSlug && !all.some((d) => d.slug === destinationSlug)) {
@@ -215,7 +235,7 @@ export async function updateLocation(actor: Actor, listingId: string, input: z.i
     .update(listings)
     .set({ ...input, destinationSlug })
     .where(eq(listings.id, listingId));
-  await syncListing(listingId);
+  await syncListing(listingId, { before });
   return { destinationSlug };
 }
 
@@ -289,7 +309,7 @@ export async function unpublishListing(actor: Actor, listingId: string) {
   const l = await loadManagedListing(actor, listingId);
   if (l.status !== "published") return;
   await db.update(listings).set({ status: "draft", updatedAt: new Date() }).where(eq(listings.id, listingId));
-  revalidateListing(listingId);
+  await revalidateListing(listingId);
 }
 
 /** Counts for the side panel: how many listings the host has in each status. */
@@ -299,6 +319,6 @@ export async function countListingsByStatus(hostId: string) {
 }
 
 /** Public URL of a published listing, following the stays route shape. */
-export function publicListingPath(l: { slug: string; destinationSlug: string | null }) {
-  return `/stays/${l.destinationSlug ?? "all"}/${l.slug}`;
+export function publicListingPath(l: { slug: string; destinationSlug: string | null; city: string }) {
+  return listingPath(l);
 }

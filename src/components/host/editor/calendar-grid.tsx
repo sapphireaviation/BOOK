@@ -11,6 +11,8 @@ export type CalendarCell = {
   day: number;
   weekday: number; // 0 Monday ... 6 Sunday
   priceLabel: string;
+  /** Compact price for phone widths, where a full amount does not fit a seventh of the screen. */
+  priceShort: string;
   priceOverridden: boolean;
   total: number;
   booked: number;
@@ -68,8 +70,8 @@ export function CalendarGrid({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg">{monthLabel}</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg whitespace-nowrap">{monthLabel}</h2>
           <div className="flex gap-2">
             {prevHref ? (
               <Link href={prevHref} className="rounded-md border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold hover:border-ink">
@@ -86,7 +88,8 @@ export function CalendarGrid({
           </div>
         </div>
         <p id="cal-help" className="mb-3 text-sm text-slate">
-          Click a first and a last date to select a range, then change it on the right. Prices are for one night.
+          Select a first and a last date, then change them in the panel <span className="lg:hidden">below</span>
+          <span className="hidden lg:inline">on the right</span>. Prices are for one night.
         </p>
         <div role="group" aria-label={`${monthLabel} calendar`} className="overflow-hidden rounded-md border border-line bg-surface">
           <div aria-hidden="true" className="grid grid-cols-7 border-b border-line bg-mist/60">
@@ -98,7 +101,7 @@ export function CalendarGrid({
           </div>
           <div className="-mr-px -mb-px grid grid-cols-7">
             {Array.from({ length: lead }, (_, i) => (
-              <div key={`lead-${i}`} aria-hidden="true" className="min-h-20 border-b border-r border-line bg-paper" />
+              <div key={`lead-${i}`} aria-hidden="true" className="min-h-16 border-b border-r border-line bg-paper sm:min-h-20" />
             ))}
             {cells.map((c) => {
               const selected = inRange(c.date);
@@ -113,7 +116,7 @@ export function CalendarGrid({
                     onClick={() => choose(c.date)}
                     aria-label={`${fmt(c.date)}. ${c.closed ? "Closed" : `${c.left} of ${c.total} left`}. ${c.priceLabel}${c.priceOverridden ? ", custom price" : ""}${c.booked ? `. ${c.booked} booked` : ""}`}
                     className={cn(
-                      "flex h-full min-h-20 w-full flex-col items-start gap-0.5 px-1.5 py-1 text-left text-xs transition-colors duration-150 sm:px-2",
+                      "flex h-full min-h-16 w-full min-w-0 flex-col items-start gap-0.5 overflow-hidden px-1 py-1 text-left text-xs sm:min-h-20 transition-colors duration-150 sm:px-2",
                       c.past && "cursor-not-allowed bg-paper text-slate/60",
                       !c.past && !selected && "hover:bg-mist",
                       !c.past && c.closed && !selected && "bg-signal-wash",
@@ -124,7 +127,10 @@ export function CalendarGrid({
                     {c.closed ? (
                       <span className="font-semibold text-signal">Closed</span>
                     ) : (
-                      <span className={cn("tnum", c.priceOverridden ? "font-bold text-sapphire" : "text-ink")}>{c.priceLabel}</span>
+                      <span className={cn("tnum", c.priceOverridden ? "font-bold text-sapphire" : "text-ink")}>
+                        <span className="sm:hidden">{c.priceShort}</span>
+                        <span className="hidden sm:inline">{c.priceLabel}</span>
+                      </span>
                     )}
                     <span className="tnum hidden text-slate sm:inline">{c.closed ? "" : `${c.left} of ${c.total} left`}</span>
                     {c.booked > 0 && <span className="tnum font-semibold text-fern">{c.booked} booked</span>}
@@ -148,7 +154,7 @@ export function CalendarGrid({
             <div className="border-b border-line p-4">
               <p className="text-sm font-semibold">{from === to || !end ? fmt(from) : `${fmt(from!)} to ${fmt(to!)}`}</p>
               <p className="text-xs text-slate">
-                {end ? `${selectedCount} ${selectedCount === 1 ? "night" : "nights"} selected` : "Click another date to select a range, or change this one night."}
+                {end ? `${selectedCount} ${selectedCount === 1 ? "night" : "nights"} selected` : "Select another date for a range, or change this one night."}
                 {booked > 0 && `. ${booked} with bookings.`}
               </p>
               <Button

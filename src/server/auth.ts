@@ -48,7 +48,14 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
     cookieCache: { enabled: true, maxAge: 60 * 5 },
   },
-  rateLimit: { enabled: true, window: 60, max: 30 },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 30,
+    // Every page load and window focus reads the session. At 30 a minute a host clicking
+    // through the dashboard got a 429, and the header then showed them as signed out.
+    customRules: { "/get-session": { window: 60, max: 600 } },
+  },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {

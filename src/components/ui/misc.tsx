@@ -7,7 +7,7 @@ export function Badge({ tone = "neutral", className, children }: { tone?: "neutr
     bad: "bg-signal-wash text-signal",
     info: "bg-sapphire-wash text-sapphire",
   } as const;
-  return <span className={cn("inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-semibold", tones[tone], className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-semibold", tones[tone], className)}>{children}</span>;
 }
 
 export function Skeleton({ className }: { className?: string }) {
@@ -40,9 +40,9 @@ export function Notice({ tone = "info", title, children, className }: { tone?: "
   );
 }
 
-export function EmptyState({ title, children, action }: { title: string; children?: React.ReactNode; action?: React.ReactNode }) {
+export function EmptyState({ title, children, action, className }: { title: string; children?: React.ReactNode; action?: React.ReactNode; className?: string }) {
   return (
-    <div className="border-y border-line py-12">
+    <div className={cn("border-y border-line py-12", className)}>
       <h2 className="text-xl">{title}</h2>
       {children && <div className="mt-2 max-w-prose text-slate">{children}</div>}
       {action && <div className="mt-5">{action}</div>}

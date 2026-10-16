@@ -13,7 +13,8 @@ export const bookingStatus = pgEnum("booking_status", [
   "expired",
   "failed",
 ]);
-export const paymentProvider = pgEnum("payment_provider", ["razorpay", "stripe", "manual"]);
+/** "test" is the simulated provider used in development and when ALLOW_TEST_PAYMENTS=true. */
+export const paymentProvider = pgEnum("payment_provider", ["razorpay", "stripe", "manual", "test"]);
 export const paymentStatus = pgEnum("payment_status", ["created", "authorized", "captured", "failed", "refunded", "partially_refunded"]);
 
 /** Price lines shown to the traveler. The fee line is always present and always 0. */

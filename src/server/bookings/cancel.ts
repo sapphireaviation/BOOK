@@ -26,18 +26,23 @@ export type CancelResult = { status: "cancelled" | "refunded"; refundAmount: num
 
 type Preview = { refundAmount: number; currency: string; policy: string; explanation: string; travelerCanCancel: boolean };
 
-async function capturedTotal(bookingId: string) {
-  const [row] = await db
-    .select({
-      paid: sql<number>`coalesce(sum(${payments.amount}) filter (where ${payments.status} in ('captured','partially_refunded','refunded')), 0)::int`,
-    })
+/**
+ * The payment that paid for the booking and how much of it can still be refunded.
+ * Duplicate or late payments are refunded separately and have status "refunded", so they are skipped.
+ */
+async function refundablePayment(bookingId: string) {
+  const [payment] = await db
+    .select()
     .from(payments)
-    .where(eq(payments.bookingId, bookingId));
-  const [ref] = await db
+    .where(and(eq(payments.bookingId, bookingId), inArray(payments.status, ["captured", "partially_refunded"])))
+    .orderBy(payments.createdAt)
+    .limit(1);
+  if (!payment) return null;
+  const [row] = await db
     .select({ refunded: sql<number>`coalesce(sum(${refunds.amount}), 0)::int` })
     .from(refunds)
-    .where(and(eq(refunds.bookingId, bookingId), ne(refunds.status, "failed")));
-  return { paid: row?.paid ?? 0, refunded: ref?.refunded ?? 0 };
+    .where(and(eq(refunds.paymentId, payment.id), ne(refunds.status, "failed")));
+  return { payment, remaining: Math.max(0, payment.amount - (row?.refunded ?? 0)) };
 }
 
 async function computePreview(bookingId: string, now: Date): Promise<Preview & { kind: "stay" | "flight" }> {
@@ -116,8 +121,8 @@ export async function cancelBooking(input: CancelInput): Promise<CancelResult> {
   const preview = await computePreview(booking.id, now);
   if (actor.kind === "traveler" && !preview.travelerCanCancel) throw new BookingError("invalid", preview.explanation);
 
-  const { paid, refunded } = await capturedTotal(booking.id);
-  const refundable = Math.max(0, Math.min(booking.total, paid) - refunded);
+  const paid = await refundablePayment(booking.id);
+  const refundable = Math.min(booking.total, paid?.remaining ?? 0);
 
   let refundAmount = preview.refundAmount;
   let explanation = preview.explanation;
@@ -173,13 +178,8 @@ export async function cancelBooking(input: CancelInput): Promise<CancelResult> {
 
     let refundId: string | null = null;
     if (refundAmount > 0) {
-      const [payment] = await tx
-        .select()
-        .from(payments)
-        .where(and(eq(payments.bookingId, booking.id), inArray(payments.status, ["captured", "partially_refunded"])))
-        .limit(1);
-      if (!payment) throw new BookingError("invalid", "We could not find the payment for this booking. Contact support.");
-      refundId = await recordRefund(tx, { bookingId: booking.id, paymentId: payment.id, amount: refundAmount, currency: payment.currency, reason: `Cancellation: ${reason}`.slice(0, 500) });
+      if (!paid) throw new BookingError("invalid", "We could not find the payment for this booking. Contact support.");
+      refundId = await recordRefund(tx, { bookingId: booking.id, paymentId: paid.payment.id, amount: refundAmount, currency: paid.payment.currency, reason: `Cancellation: ${reason}`.slice(0, 500) });
     }
     return { refundId, hostPayout };
   });

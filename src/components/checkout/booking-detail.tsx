@@ -204,7 +204,7 @@ export function BookingDetailView({
               />
             </div>
           )}
-          {booking.status !== "confirmed" && <p className="mt-3 text-sm text-slate">This booking cannot be cancelled online in its current state.</p>}
+          {booking.status === "completed" && <p className="mt-3 text-sm text-slate">This trip has already happened, so it can no longer be cancelled.</p>}
         </section>
       </div>
 

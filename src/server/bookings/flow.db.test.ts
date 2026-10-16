@@ -63,7 +63,119 @@ vi.mock("@/server/stays/inventory", async () => {
   };
 });
 
-describe.skipIf(!RUN)("stay booking flow (database)", async () => {
+/** Fake airline: `airline.fail` makes the next order fail. */
+const airline = { fail: false, orders: 0, cancels: 0 };
+const fakeOffer = (id: string) => ({
+  id,
+  provider: "fake",
+  total: 612_300,
+  currency: "INR",
+  baseAmount: 520_000,
+  taxAmount: 92_300,
+  owner: { iata: "6E", name: "IndiGo" },
+  conditions: { refundable: true, refundPenalty: { amount: 100_000, currency: "INR" }, changeable: false },
+  expiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+  passengerIds: ["pas_1"],
+  requiresPassport: false,
+  slices: [
+    {
+      id: "sl_1",
+      origin: { iata: "DEL", name: "Indira Gandhi International", city: "Delhi", timeZone: "Asia/Kolkata" },
+      destination: { iata: "GOI", name: "Dabolim", city: "Goa", timeZone: "Asia/Kolkata" },
+      departAt: "2026-12-20T06:15:00",
+      arriveAt: "2026-12-20T08:50:00",
+      durationMinutes: 155,
+      stops: 0,
+      segments: [],
+    },
+  ],
+});
+vi.mock("@/server/flights", () => ({
+  getOffer: async (id: string) => fakeOffer(id),
+  getFlightProvider: () => ({
+    name: "fake",
+    async createOrder(input: { amount: number; currency: string }) {
+      if (input.amount !== 612_300 || input.currency !== "INR") throw new Error("wrong amount");
+      if (airline.fail) throw new Error("Airline rejected the order");
+      airline.orders++;
+      return { orderId: `ord_${airline.orders}`, airlineReference: "PNR7QX", raw: {} };
+    },
+    async cancelOrder() {
+      airline.cancels++;
+      return { refundAmount: 512_300, currency: "INR" };
+    },
+  }),
+}));
+
+const dbDescribe = RUN ? describe : describe.skip;
+
+dbDescribe("flight booking flow (database)", async () => {
+  if (!RUN) return;
+  const { db } = await import("@/db");
+  const schema = await import("@/db/schema");
+  const { createFlightBooking } = await import("./index");
+  const { payWithTestProvider } = await import("./checkout");
+  const { fulfilBooking } = await import("./confirm");
+  const { cancelBooking } = await import("./cancel");
+  const ids: string[] = [];
+  const tasks: Promise<void>[] = [];
+  const schedule = (task: () => Promise<void>) => void tasks.push(task());
+  const flush = async () => {
+    await Promise.all(tasks.splice(0));
+  };
+  const passenger = { id: "pas_1", type: "adult" as const, title: "ms" as const, givenName: "Asha", familyName: "Rao", bornOn: "1990-02-03", gender: "f" as const, email: "asha@example.com", phone: "+919800000000" };
+  const book = async () => {
+    const b = await createFlightBooking({ userId: null, contact: { name: "Asha Rao", email: "asha@example.com" }, offerId: "off_1", passengers: [passenger] });
+    ids.push(b.bookingId);
+    return b;
+  };
+  const row = async (id: string) => (await db.select().from(schema.bookings).where(eq(schema.bookings.id, id)))[0];
+
+  afterAll(async () => {
+    await flush();
+    if (ids.length) await db.delete(schema.bookings).where(inArray(schema.bookings.id, ids));
+  });
+
+  it("books at the airline's total with a zero fee line and an expiry no later than the offer", async () => {
+    const b = await book();
+    const r = await row(b.bookingId);
+    expect(r).toMatchObject({ status: "pending_payment", total: 612_300, currency: "INR" });
+    expect(r.priceLines.map((l) => l.amount)).toEqual([520_000, 92_300, 0]);
+    expect(r.expiresAt!.getTime()).toBeLessThanOrEqual(Date.now() + 10 * 60_000);
+  });
+
+  it("tickets once after payment and stores the airline reference", async () => {
+    const b = await book();
+    await payWithTestProvider(b.bookingId, schedule);
+    await flush();
+    await fulfilBooking(b.bookingId);
+    const [f] = await db.select().from(schema.flightBookings).where(eq(schema.flightBookings.bookingId, b.bookingId));
+    expect(f).toMatchObject({ providerOrderId: "ord_1", airlineReference: "PNR7QX" });
+    expect(airline.orders).toBe(1);
+    expect((await row(b.bookingId)).status).toBe("confirmed");
+
+    const res = await cancelBooking({ bookingId: b.bookingId, actor: { kind: "traveler", userId: null, accessToken: b.accessToken }, reason: "Change of plan" });
+    expect(res).toEqual({ status: "refunded", refundAmount: 512_300, currency: "INR" });
+    expect(airline.cancels).toBe(1);
+  });
+
+  it("refunds in full and fails the booking when the airline refuses the order", async () => {
+    airline.fail = true;
+    const b = await book();
+    await payWithTestProvider(b.bookingId, schedule);
+    await flush();
+    airline.fail = false;
+    expect((await row(b.bookingId)).status).toBe("failed");
+    const [refund] = await db.select().from(schema.refunds).where(eq(schema.refunds.bookingId, b.bookingId));
+    expect(refund).toMatchObject({ amount: 612_300, status: "processed" });
+    expect(sent.some((e) => e.template === "flight-ticketing-failed")).toBe(true);
+    await fulfilBooking(b.bookingId);
+    expect(airline.orders).toBe(1);
+  });
+});
+
+dbDescribe("stay booking flow (database)", async () => {
+  if (!RUN) return;
   const { db } = await import("@/db");
   const schema = await import("@/db/schema");
   const { newId } = await import("@/lib/id");
@@ -126,7 +238,7 @@ describe.skipIf(!RUN)("stay booking flow (database)", async () => {
   });
 
   const booking = async (id: string) => (await db.select().from(schema.bookings).where(eq(schema.bookings.id, id)))[0];
-  const booked = async () => (await db.select().from(schema.unitInventory).where(eq(schema.unitInventory.unitId, unitId))).map((r) => r.booked);
+  const booked = async () => (await db.select().from(schema.unitInventory).where(eq(schema.unitInventory.unitId, unitId)).orderBy(schema.unitInventory.date)).map((r) => r.booked);
 
   let first: Awaited<ReturnType<typeof createStayBooking>>;
   let second: Awaited<ReturnType<typeof createStayBooking>>;
@@ -158,6 +270,7 @@ describe.skipIf(!RUN)("stay booking flow (database)", async () => {
   });
 
   it("confirms with the test provider and owes the host 100%", async () => {
+    sent.length = 0;
     const res = await payWithTestProvider(second.bookingId, schedule);
     await flush();
     expect(res.ok && res.outcome.kind).toBe("confirmed");
@@ -213,5 +326,29 @@ describe.skipIf(!RUN)("stay booking flow (database)", async () => {
     expect(await booked()).toEqual([0, 0, 0, 1]);
     const again = await cancelBooking({ bookingId: second.bookingId, actor: { kind: "system" }, reason: "x" }).catch((e) => e);
     expect(again.code).toBe("invalid");
+  });
+
+  it("refunds half inside the moderate window and keeps the rest owed to the host", async () => {
+    const soon = addDays(toISODate(new Date()), 2);
+    const late = await createStayBooking({ ...input, checkIn: soon, checkOut: addDays(soon, 1) });
+    bookingIds.push(late.bookingId);
+    await payWithTestProvider(late.bookingId, schedule);
+    await flush();
+    const res = await cancelBooking({ bookingId: late.bookingId, actor: { kind: "traveler", userId: null, accessToken: late.accessToken }, reason: "Sick" });
+    expect(res).toEqual({ status: "refunded", refundAmount: 150_000, currency: "INR" });
+    const [payout] = await db.select().from(schema.payouts).where(eq(schema.payouts.bookingId, late.bookingId));
+    expect(payout).toMatchObject({ status: "owed", amount: 150_000 });
+    const [payment] = await db.select().from(schema.payments).where(eq(schema.payments.bookingId, late.bookingId));
+    expect(payment.status).toBe("partially_refunded");
+  });
+
+  it("lets an admin override the refund, capped at what was paid", async () => {
+    const day = addDays(toISODate(new Date()), 50);
+    const b = await createStayBooking({ ...input, checkIn: day, checkOut: addDays(day, 1) });
+    bookingIds.push(b.bookingId);
+    await payWithTestProvider(b.bookingId, schedule);
+    await flush();
+    const res = await cancelBooking({ bookingId: b.bookingId, actor: { kind: "admin", userId: hostId }, reason: "Goodwill", refundAmount: 10_000_000 });
+    expect(res.refundAmount).toBe(300_000);
   });
 });

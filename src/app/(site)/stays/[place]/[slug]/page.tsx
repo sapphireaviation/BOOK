@@ -58,7 +58,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title,
     description,
     alternates: { canonical: l.url },
-    robots: l.isDemo ? { index: false, follow: true } : undefined,
+    // Sample listings are test data and stay out of search engines.
+    ...(l.isDemo ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: l.title,
       description,

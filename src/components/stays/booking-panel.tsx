@@ -45,7 +45,10 @@ export function BookingPanel(props: Props) {
   const [rooms, setRooms] = useState(() => intParam(sp.get("units") ?? sp.get("rooms"), 1, 8, 1));
   const [unitId, setUnitId] = useState(() => {
     const fromUrl = sp.get("unit");
-    return props.units.find((u) => u.id === fromUrl)?.id ?? props.units[0]?.id ?? "";
+    const party = intParam(sp.get("adults"), 1, 16, 2) + intParam(sp.get("children"), 0, 10, 0);
+    const rooms0 = intParam(sp.get("units") ?? sp.get("rooms"), 1, 8, 1);
+    const fitting = [...props.units].filter((u) => u.maxGuests * rooms0 >= party).sort((a, b) => a.basePrice - b.basePrice)[0];
+    return props.units.find((u) => u.id === fromUrl)?.id ?? fitting?.id ?? props.units[0]?.id ?? "";
   });
   const [result, setResult] = useState<{ key: string; value: QuoteResult } | null>(null);
   const [pending, startTransition] = useTransition();

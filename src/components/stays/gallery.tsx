@@ -28,7 +28,7 @@ export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
           <Image src={first.url} alt={first.alt || `Photo of ${title}`} fill sizes="(min-width: 1200px) 560px, 50vw" className="object-cover" priority />
         </div>
         {side.map((p, i) => (
-          <div key={p.url + i} className={`relative overflow-hidden rounded-sm bg-mist ${side.length < 3 ? "md:row-span-2" : ""}`}>
+          <div key={p.url + i} className={`relative overflow-hidden rounded-sm bg-mist ${side.length < 3 ? "md:row-span-2" : side.length === 3 && i === 2 ? "md:col-span-2" : ""}`}>
             <Image src={p.url} alt={p.alt || `Photo ${i + 2} of ${title}`} fill sizes="(min-width: 1200px) 280px, 25vw" className="object-cover" />
           </div>
         ))}

@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title,
     description,
     alternates: { canonical: url },
-    robots: p.stats.count < INDEX_MIN_LISTINGS ? { index: false, follow: true } : undefined,
+    ...(p.stats.count < INDEX_MIN_LISTINGS ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title, description, url, type: "website", images: image ? [{ url: absoluteUrl(image.url), width: 1200, height: 800, alt: image.alt }] : undefined },
     twitter: { card: "summary_large_image", title, description },
   };

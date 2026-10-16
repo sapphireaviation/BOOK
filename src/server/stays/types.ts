@@ -54,7 +54,7 @@ export type StayCard = {
 };
 
 export type StaySearchResult = {
-  place: { slug: string | null; name: string; lat: number; lng: number } | null;
+  place: { slug: string | null; name: string; lat: number; lng: number; radiusKm?: number } | null;
   results: StayCard[];
   total: number;
   page: number;

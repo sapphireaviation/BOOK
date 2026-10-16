@@ -35,8 +35,9 @@ function parse(sp: Record<string, string | string[] | undefined>) {
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const parsed = parse(await searchParams);
-  const where = parsed.success ? parsed.data.place : null;
-  const title = where ? `Stays in ${where.replace(/-/g, " ")}` : "Search stays";
+  const resolved = parsed.success ? await resolvePlace(parsed.data.place).catch(() => null) : null;
+  const where = resolved?.name ?? (parsed.success ? parsed.data.place : null);
+  const title = where ? `Stays in ${where}` : "Search stays";
   const description = parsed.success
     ? `Places to stay in ${where} from ${dayLabel(parsed.data.checkin)} to ${dayLabel(parsed.data.checkout)}, with the full price for your dates and no platform fee.`
     : "Search places to stay by destination, dates and guests. See the full price for your dates, including taxes, with no platform fee.";
@@ -190,7 +191,8 @@ async function Results({ searchParams }: { searchParams: SP }) {
                     title: r.title,
                     summary: r.summary,
                     propertyType: r.propertyType,
-                    where: r.distanceKm !== null && result.place?.slug ? `${r.city}, ${r.distanceKm} km from the centre of ${result.place.name}` : r.city,
+                    // Distance reads well for a town; for a whole state or island it would mislead.
+                    where: r.distanceKm !== null && result.place?.slug && (result.place.radiusKm ?? 99) <= 30 && r.city !== result.place.name ? `${r.city}, ${r.distanceKm} km from ${result.place.name}` : r.city,
                     photo: r.photo,
                     ratingAvg: r.ratingAvg,
                     ratingCount: r.ratingCount,

@@ -290,7 +290,7 @@ export async function searchStays(params: StaySearch, opts?: { source?: "web" | 
   }));
 
   const result: StaySearchResult = {
-    place: { slug: place.slug, name: place.name, lat: place.lat, lng: place.lng },
+    place: { slug: place.slug, name: place.name, lat: place.lat, lng: place.lng, radiusKm: place.radiusKm },
     results,
     total: agg.total,
     page,

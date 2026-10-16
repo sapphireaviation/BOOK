@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DateInput } from "@/components/search/date-input";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -57,9 +58,9 @@ async function Results({ searchParams }: Pick<PageProps<"/search">, "searchParam
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl">We read this as</h1>
+        <h1 className="text-3xl">Check your search</h1>
         <p className="mt-2 text-slate">
-          From <q className="text-ink">{q}</q>
+          You wrote <q className="text-ink">{q}</q>
         </p>
       </div>
       <ul className="divide-y divide-line border-y border-line">
@@ -127,17 +128,27 @@ function FollowUp({ q, trip }: { q: string; trip: Completed }) {
           const meta = labels[f];
           return (
             <Field key={f} label={meta.label} hint={meta.hint} error={trip.errors[f]}>
-              {(p) => (
-                <Input
-                  {...p}
-                  name={f}
-                  type={meta.type}
-                  min={meta.type === "date" ? today : undefined}
-                  defaultValue={typeof current[f] === "string" ? (current[f] as string) : undefined}
-                  required={f !== "return"}
-                  autoComplete="off"
-                />
-              )}
+              {(p) =>
+                meta.type === "date" ? (
+                  <DateInput
+                    {...p}
+                    name={f}
+                    label={meta.label}
+                    min={today}
+                    defaultValue={typeof current[f] === "string" ? (current[f] as string) : undefined}
+                    clearable={f === "return"}
+                  />
+                ) : (
+                  <Input
+                    {...p}
+                    name={f}
+                    type="text"
+                    defaultValue={typeof current[f] === "string" ? (current[f] as string) : undefined}
+                    required
+                    autoComplete="off"
+                  />
+                )
+              }
             </Field>
           );
         })}

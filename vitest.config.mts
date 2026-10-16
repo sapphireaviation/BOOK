@@ -1,5 +1,9 @@
 import { fileURLToPath } from "node:url";
+import { config } from "dotenv";
 import { defineConfig } from "vitest/config";
+
+// Tests that touch Postgres read DATABASE_URL from .env.local, the same file the app uses.
+config({ path: ".env.local", quiet: true });
 
 export default defineConfig({
   resolve: {
@@ -11,6 +15,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    testTimeout: 30_000,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.ts"],
     exclude: ["node_modules", ".claude/**", ".agents/**"],
   },

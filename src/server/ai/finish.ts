@@ -104,9 +104,11 @@ export async function resolveAirport(q: string, resolvers: Resolvers): Promise<A
   try {
     const found = await resolvers.airports(query);
     const lower = query.toLowerCase();
+    const byCode = found.find((a) => a.iata === upper);
+    const byCity = found.find((a) => a.city.toLowerCase() === lower);
+    // "GOA" typed in capitals is the code (Genoa); "goa" or "Goa" is the city.
     const best =
-      found.find((a) => a.iata === upper) ??
-      found.find((a) => a.city.toLowerCase() === lower) ??
+      (query === upper ? (byCode ?? byCity) : (byCity ?? byCode)) ??
       found.find((a) => a.city.toLowerCase().startsWith(lower) || a.name.toLowerCase().includes(lower));
     if (best) return best;
   } catch {

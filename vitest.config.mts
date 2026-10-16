@@ -1,13 +1,17 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-// Resolves the "@/..." import alias from tsconfig.json in tests.
 export default defineConfig({
-  test: {
-    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.ts"],
-    exclude: ["node_modules", ".claude/**", ".agents/**"],
-  },
   resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    alias: [
+      { find: /^@\//, replacement: fileURLToPath(new URL("./src/", import.meta.url)) },
+      // "server-only" throws outside a React Server Components bundle; tests run server modules directly.
+      { find: /^server-only$/, replacement: fileURLToPath(new URL("./node_modules/server-only/empty.js", import.meta.url)) },
+    ],
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.ts"],
+    exclude: ["node_modules", ".claude/**", ".agents/**"],
   },
 });

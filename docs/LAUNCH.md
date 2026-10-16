@@ -49,7 +49,7 @@ Legal pages (`/terms`, `/privacy`, `/cancellation`) are drafts. Have a lawyer re
 - Cancel within policy; refund shows in the Razorpay dashboard.
 - Search a flight with the Duffel test token (Duffel Airways, code ZZ, serves test routes such as LHR to JFK), book it, confirm the airline reference appears.
 - If a flight payment succeeds but ticketing fails, the traveler is refunded automatically and emailed. A booking left with `ticketing: in_progress` in `meta` after a crash needs a manual check in the Duffel dashboard before any action, so we never pay for two orders.
-- Call the MCP endpoint from Claude (Settings, Connectors, add custom connector `https://<domain>/api/mcp/mcp`) and ask it to find a stay.
+- Call the MCP endpoint from Claude (Settings, Connectors, add custom connector `https://<domain>/api/mcp`) and ask it to find a stay.
 
 ## 5. Switch to live
 

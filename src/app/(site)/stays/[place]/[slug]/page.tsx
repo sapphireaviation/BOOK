@@ -500,8 +500,11 @@ function PanelFallback({ l }: { l: ListingPage }) {
       <p className="text-lg font-extrabold">
         <span className="tnum">{formatMoney({ amount: l.fromPrice, currency: l.currency })}</span> <span className="text-sm font-semibold text-slate">a night before taxes</span>
       </p>
-      <Skeleton className="mt-4 h-11 w-full" />
-      <Skeleton className="mt-3 h-11 w-full" />
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="col-span-2 h-12 w-full" />
+      </div>
     </div>
   );
 }

@@ -2,12 +2,18 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { quoteAction, type QuoteResult } from "@/app/(site)/stays/actions";
-import { buttonClass, inputClass, PriceBreakdown, Select, Skeleton } from "@/components/ui";
-import { addDays, isISODate, nightsBetween } from "@/lib/dates";
+import { stayLimits } from "@/components/search/limits";
+import { BarField, PanelFooter, Steppers, usePickers } from "@/components/search/parts";
+import { summarizeGuests } from "@/components/search/serialize";
+import { useToday } from "@/components/search/use-today";
+import { buttonClass, PriceBreakdown, Select, Skeleton } from "@/components/ui";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Popover } from "@/components/ui/popover";
+import { formatShortDay, type DateRange } from "@/lib/calendar";
+import { isISODate, nightsBetween } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
-import { dayLabel } from "./format";
 
 export type PanelUnit = { id: string; name: string; maxGuests: number; basePrice: number; quantity: number };
 
@@ -24,8 +30,7 @@ type Props = {
   bookPath: string;
 };
 
-const noopSubscribe = () => () => {};
-const todayISO = () => new Date().toISOString().slice(0, 10);
+type Picker = "checkin" | "checkout" | "guests";
 
 function intParam(v: string | null, min: number, max: number, dflt: number) {
   const n = Number(v);
@@ -37,7 +42,8 @@ export function BookingPanel(props: Props) {
   const sp = useSearchParams();
   const id = useId();
   // Read on the client only, so the server render is the same for every visitor.
-  const today = useSyncExternalStore(noopSubscribe, todayISO, () => null);
+  const today = useToday();
+  const pickers = usePickers<Picker>();
   const [checkIn, setCheckIn] = useState(() => (isISODate(sp.get("checkin")) ? sp.get("checkin")! : ""));
   const [checkOut, setCheckOut] = useState(() => (isISODate(sp.get("checkout")) ? sp.get("checkout")! : ""));
   const [adults, setAdults] = useState(() => intParam(sp.get("adults"), 1, 16, 2));
@@ -95,6 +101,29 @@ export function BookingPanel(props: Props) {
 
   const quote = current?.quote;
   const maxRooms = Math.max(1, Math.min(8, unit?.quantity ?? 1, adults));
+  const showRooms = (unit?.quantity ?? 1) > 1;
+  const range: DateRange = { start: checkIn || undefined, end: checkOut || undefined };
+  const guestText = showRooms ? summarizeGuests({ adults, children, rooms }) : summarizeGuests({ adults, children, rooms: 1 }).replace(/, 1 room$/, "");
+
+  function onDates(value: DateRange, { done }: { done: boolean }) {
+    setCheckIn(value.start ?? "");
+    setCheckOut(value.end ?? "");
+    if (done) pickers.close();
+  }
+
+  function onGuests(key: string, v: number) {
+    if (key === "adults") {
+      setAdults(v);
+      if (rooms > v) setRooms(v);
+      pickFittingUnit(v + children, Math.min(rooms, v));
+    } else if (key === "children") {
+      setChildren(v);
+      pickFittingUnit(adults + v, rooms);
+    } else {
+      setRooms(v);
+      pickFittingUnit(guests, v);
+    }
+  }
 
   return (
     <section aria-labelledby={`${id}-title`} className="rounded-md border border-line bg-surface p-5 shadow-[var(--shadow-float)]">
@@ -104,76 +133,102 @@ export function BookingPanel(props: Props) {
       </h2>
       {props.instantBook && <p className="mt-1 text-sm text-slate">Instant book: confirmed as soon as you pay.</p>}
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <label className="text-sm font-semibold">
-          Check in
-          <input
-            type="date"
-            className={`${inputClass} mt-1.5 px-2`}
-            value={checkIn}
-            min={today ?? undefined}
-            onChange={(e) => {
-              const v = e.target.value;
-              setCheckIn(v);
-              if (isISODate(v) && (!isISODate(checkOut) || checkOut <= v)) setCheckOut(addDays(v, Math.max(1, props.minNights)));
-            }}
-          />
-        </label>
-        <label className="text-sm font-semibold">
-          Check out
-          <input
-            type="date"
-            className={`${inputClass} mt-1.5 px-2`}
-            value={checkOut}
-            min={isISODate(checkIn) ? addDays(checkIn, 1) : (today ?? undefined)}
-            onChange={(e) => setCheckOut(e.target.value)}
-          />
-        </label>
-        <label className="text-sm font-semibold">
-          Adults
-          <Select className="mt-1.5" value={adults} onChange={(e) => { const v = Number(e.target.value); setAdults(v); if (rooms > v) setRooms(v); pickFittingUnit(v + children, Math.min(rooms, v)); }}>
-            {Array.from({ length: 16 }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label className="text-sm font-semibold">
-          Children
-          <Select className="mt-1.5" value={children} onChange={(e) => { const v = Number(e.target.value); setChildren(v); pickFittingUnit(adults + v, rooms); }}>
-            {Array.from({ length: 11 }, (_, i) => i).map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </Select>
-        </label>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <BarField
+          ref={pickers.anchor("checkin")}
+          label="Check in"
+          value={checkIn ? formatShortDay(checkIn) : null}
+          placeholder="Add date"
+          expanded={pickers.open === "checkin"}
+          onClick={() => pickers.toggle("checkin")}
+          className="min-h-12"
+        />
+        <BarField
+          ref={pickers.anchor("checkout")}
+          label="Check out"
+          value={checkOut ? formatShortDay(checkOut) : null}
+          placeholder="Add date"
+          expanded={pickers.open === "checkout"}
+          onClick={() => pickers.toggle("checkout")}
+          className="min-h-12"
+        />
+        <BarField
+          ref={pickers.anchor("guests")}
+          label="Guests"
+          value={guestText}
+          placeholder=""
+          expanded={pickers.open === "guests"}
+          onClick={() => pickers.toggle("guests")}
+          className="col-span-2 min-h-12"
+        />
         {props.units.length > 1 && (
-          <label className="col-span-2 text-sm font-semibold">
+          <label className="col-span-2 mt-2 text-sm font-semibold">
             Room
             <Select className="mt-1.5" value={unitId} onChange={(e) => setUnitId(e.target.value)}>
               {props.units.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.name}, sleeps {u.maxGuests}, from {formatMoney({ amount: u.basePrice, currency: props.currency })}
-                </option>
-              ))}
-            </Select>
-          </label>
-        )}
-        {(unit?.quantity ?? 1) > 1 && (
-          <label className="col-span-2 text-sm font-semibold">
-            Rooms
-            <Select className="mt-1.5" value={rooms} onChange={(e) => { const v = Number(e.target.value); setRooms(v); pickFittingUnit(guests, v); }}>
-              {Array.from({ length: maxRooms }, (_, i) => i + 1).map((n) => (
-                <option key={n} value={n}>
-                  {n}
+                  {u.name}, sleeps {u.maxGuests}
                 </option>
               ))}
             </Select>
           </label>
         )}
       </div>
+
+      {(["checkin", "checkout"] as const).map((which) => (
+        <Popover key={which} open={pickers.open === which} onClose={pickers.close} anchorRef={pickers.anchor(which)} label="Stay dates">
+          {today && (
+            <DateRangePicker
+              mode="range"
+              value={range}
+              editing={which === "checkout" ? "end" : "start"}
+              onChange={onDates}
+              min={today}
+              minGap={1}
+              startMarker="In"
+              endMarker="Out"
+              prompts={{
+                start: "Choose a check in date",
+                end: props.minNights > 1 ? `Choose a check out date, at least ${props.minNights} nights later` : "Choose a check out date",
+              }}
+              summary={
+                datesReady
+                  ? `${formatShortDay(checkIn)} to ${formatShortDay(checkOut)}, ${nights} ${nights === 1 ? "night" : "nights"}`
+                  : checkIn
+                    ? `Check in ${formatShortDay(checkIn)}`
+                    : null
+              }
+              onDone={pickers.close}
+            />
+          )}
+        </Popover>
+      ))}
+      <Popover open={pickers.open === "guests"} onClose={pickers.close} anchorRef={pickers.anchor("guests")} label="Guests and rooms" className="sm:w-96">
+        <div className="p-4 sm:p-5">
+          <Steppers
+            rows={[
+              { key: "adults", label: "Adults", hint: "13 or older", value: adults, ...stayLimits.adults },
+              { key: "children", label: "Children", hint: "Under 13", value: children, ...stayLimits.children },
+              ...(showRooms
+                ? [
+                    {
+                      key: "rooms",
+                      label: "Rooms",
+                      value: rooms,
+                      min: 1,
+                      max: maxRooms,
+                      limitNote: maxRooms === adults && adults < Math.min(8, unit?.quantity ?? 1) ? "Each room needs at least one adult" : undefined,
+                    },
+                  ]
+                : []),
+            ]}
+            onChange={onGuests}
+          />
+          <div className="mt-2">
+            <PanelFooter onDone={pickers.close}>{guestText}</PanelFooter>
+          </div>
+        </div>
+      </Popover>
 
       <div className="mt-5" aria-live="polite" aria-busy={pending || undefined}>
         {!datesReady ? (
@@ -189,7 +244,7 @@ export function BookingPanel(props: Props) {
         ) : quote.available ? (
           <>
             <p className="mb-3 text-sm text-slate">
-              {dayLabel(checkIn)} to {dayLabel(checkOut)}, {nights} {nights === 1 ? "night" : "nights"}, {guests} {guests === 1 ? "guest" : "guests"}
+              {formatShortDay(checkIn)} to {formatShortDay(checkOut)}, {nights} {nights === 1 ? "night" : "nights"}, {guests} {guests === 1 ? "guest" : "guests"}
             </p>
             <PriceBreakdown lines={quote.lines} currency={quote.currency} total={quote.total} className={pending ? "opacity-60" : undefined} />
             <Link href={reserveHref} className={buttonClass({ size: "lg", className: "mt-5 w-full" })}>

@@ -133,6 +133,6 @@ export async function adminCancelBooking(
   } catch (err) {
     console.error("admin cancel failed", err);
     const detail = err instanceof Error && err.message ? ` (${err.message})` : "";
-    return { ok: false, message: `The booking was not cancelled${detail}. Nothing was refunded. Try again, or cancel it in the payment provider's dashboard and note it here.` };
+    return { ok: false, message: `The booking was not cancelled${detail}. Nothing was refunded. Try again in a minute. If it keeps failing, refund from the payment provider's dashboard.` };
   }
 }

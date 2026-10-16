@@ -243,28 +243,19 @@ export async function updateCalendar(id: string, unitId: string, currency: strin
   });
 }
 
-export async function publish(id: string, _prev: ActionState, formData: FormData) {
+const publishSchema = z.object({ intent: z.enum(["publish", "unpublish"]) });
+
+export async function setPublished(id: string, _prev: ActionState, formData: FormData) {
   listingId.parse(id);
   return runAction({
-    schema: empty,
+    schema: publishSchema,
     formData,
     ok: "Listing published",
-    run: async (actor) => {
-      await publishListing(actor, id);
+    run: async (actor, input) => {
+      if (input.intent === "publish") await publishListing(actor, id);
+      else await unpublishListing(actor, id);
       expireListing(id);
-    },
-  });
-}
-
-export async function unpublish(id: string, _prev: ActionState, formData: FormData) {
-  listingId.parse(id);
-  return runAction({
-    schema: empty,
-    formData,
-    ok: "Listing unpublished",
-    run: async (actor) => {
-      await unpublishListing(actor, id);
-      expireListing(id);
+      return input.intent === "publish" ? "Listing published" : "Listing unpublished";
     },
   });
 }

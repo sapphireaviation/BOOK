@@ -25,6 +25,10 @@ function MoneyList({ items, empty, noun = ["booking", "bookings"] }: { items: { 
   );
 }
 
+function kinds(c: { stay: number; flight: number }) {
+  return `${c.stay} ${c.stay === 1 ? "stay" : "stays"}, ${c.flight} ${c.flight === 1 ? "flight" : "flights"}`;
+}
+
 export default async function AdminOverview() {
   await requireAdminPage("/admin");
   const o = await adminOverview(new Date());
@@ -33,12 +37,12 @@ export default async function AdminOverview() {
     <>
       <PageHeader title="Overview" description="Days run midnight to midnight UTC. The week starts on Monday." />
       <StatRow>
-        <Stat label="Bookings today" hint={`${o.bookingsToday.stay} stays, ${o.bookingsToday.flight} flights`}>
+        <Stat label="Bookings today" hint={kinds(o.bookingsToday)}>
           <Link href="/admin/bookings" className="hover:underline">
             {o.bookingsToday.total}
           </Link>
         </Stat>
-        <Stat label="Bookings this week" hint={`${o.bookingsThisWeek.stay} stays, ${o.bookingsThisWeek.flight} flights`}>
+        <Stat label="Bookings this week" hint={kinds(o.bookingsThisWeek)}>
           {o.bookingsThisWeek.total}
         </Stat>
         <Stat label="Listings awaiting review" hint="Published but not yet verified">

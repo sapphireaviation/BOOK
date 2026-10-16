@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Notice, Price } from "@/components/ui";
-import { PublishButton, UnpublishButton } from "@/components/host/editor/publish-panel";
+import { PublishControls } from "@/components/host/editor/publish-panel";
 import { DetailList } from "@/components/host/table";
 import { site } from "@/config/site";
 import { formatDate } from "@/lib/dates";
@@ -63,18 +63,19 @@ export default async function PublishPage({ params }: PageProps<"/host/listings/
                   Some checklist items are no longer complete. Guests still see the listing, so fix them soon.
                 </Notice>
               )}
-              <div className="mt-4">
-                <UnpublishButton listingId={id} />
-              </div>
             </>
           ) : listing.status === "suspended" ? (
             <p className="text-sm text-slate">Publishing is paused while the listing is suspended.</p>
           ) : (
             <>
               <p className="font-semibold">Not live yet</p>
-              <p className="mb-4 mt-1 text-sm text-slate">{ready ? "Guests can find and book it as soon as you publish." : "Finish the checklist to publish."}</p>
-              <PublishButton listingId={id} disabled={!ready} republish={Boolean(listing.publishedAt)} />
+              <p className="mt-1 text-sm text-slate">{ready ? "Guests can find and book it as soon as you publish." : "Finish the checklist to publish."}</p>
             </>
+          )}
+          {listing.status !== "suspended" && (
+            <div className="mt-4">
+              <PublishControls listingId={id} published={published} ready={ready} republish={Boolean(listing.publishedAt)} />
+            </div>
           )}
         </div>
         <DetailList

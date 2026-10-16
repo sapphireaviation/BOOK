@@ -53,11 +53,11 @@ export function ModerateListing({ listingId, status, verified }: { listingId: st
   );
 }
 
-export function RoleSelect({ userId, role, self }: { userId: string; role: string; self: boolean }) {
+export function RoleSelect({ userId, role, self, name }: { userId: string; role: string; self: boolean; name: string }) {
   return (
-    <ActionForm action={changeRoleAction.bind(null, userId)} showStatus={false} aria-label="Change role" className="flex flex-wrap items-center gap-2">
+    <ActionForm action={changeRoleAction.bind(null, userId)} showStatus={false} aria-label={`Change role for ${name}`} className="flex flex-wrap items-center gap-2">
       <label className="sr-only" htmlFor={`role-${userId}`}>
-        Role
+        Role for {name}
       </label>
       <Select id={`role-${userId}`} name="role" defaultValue={role} className="h-9 w-32 text-sm" disabled={self}>
         <option value="traveler">Traveler</option>

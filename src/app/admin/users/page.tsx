@@ -52,7 +52,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
                 <Td numeric>{u.listingCount}</Td>
                 <Td className="whitespace-nowrap text-slate">{formatDate(u.createdAt)}</Td>
                 <Td>
-                  <RoleSelect userId={u.id} role={u.role} self={u.id === viewer.id} />
+                  <RoleSelect userId={u.id} role={u.role} self={u.id === viewer.id} name={u.name || u.email} />
                 </Td>
               </tr>
             ))}

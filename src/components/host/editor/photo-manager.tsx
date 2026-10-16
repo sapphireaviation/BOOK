@@ -160,9 +160,9 @@ function PhotoRow({ listingId, photo, index, count }: { listingId: string; photo
           </div>
         </ActionForm>
         <div className="flex flex-wrap items-center gap-2">
-          {index > 0 && <MoveButton listingId={listingId} photoId={photo.id} direction="first" label="Make cover" />}
-          {index > 0 && <MoveButton listingId={listingId} photoId={photo.id} direction="up" label="Move up" />}
-          {index < count - 1 && <MoveButton listingId={listingId} photoId={photo.id} direction="down" label="Move down" />}
+          <MoveButton listingId={listingId} photoId={photo.id} direction="first" label="Make cover" disabled={index === 0} />
+          <MoveButton listingId={listingId} photoId={photo.id} direction="up" label="Move up" disabled={index === 0} />
+          <MoveButton listingId={listingId} photoId={photo.id} direction="down" label="Move down" disabled={index === count - 1} />
           <span className="tnum ml-auto text-xs text-slate">{photo.width && photo.height ? `${photo.width} by ${photo.height} px` : null}</span>
           <DeletePhoto listingId={listingId} photoId={photo.id} />
         </div>
@@ -171,20 +171,20 @@ function PhotoRow({ listingId, photo, index, count }: { listingId: string; photo
   );
 }
 
-function MoveButton({ listingId, photoId, direction, label }: { listingId: string; photoId: string; direction: "up" | "down" | "first"; label: string }) {
+function MoveButton({ listingId, photoId, direction, label, disabled }: { listingId: string; photoId: string; direction: "up" | "down" | "first"; label: string; disabled: boolean }) {
   return (
-    <ActionForm action={arrangePhoto.bind(null, listingId, photoId)} showStatus={false} aria-label={label}>
+    <ActionForm action={arrangePhoto.bind(null, listingId, photoId)} showStatus={false} aria-label={label} className="flex items-center gap-2">
       <input type="hidden" name="direction" value={direction} />
-      <MoveSubmit label={label} />
+      <MoveSubmit label={label} disabled={disabled} />
     </ActionForm>
   );
 }
 
-function MoveSubmit({ label }: { label: string }) {
+function MoveSubmit({ label, disabled }: { label: string; disabled: boolean }) {
   const { pending, state } = useFormState();
   return (
     <>
-      <Button type="submit" variant="ghost" size="sm" pending={pending} className="border border-line">
+      <Button type="submit" variant="ghost" size="sm" pending={pending} disabled={disabled} className="border border-line">
         {label}
       </Button>
       <span aria-live="polite" className={cn("text-xs font-semibold", state.status === "error" ? "text-signal" : "text-fern")}>

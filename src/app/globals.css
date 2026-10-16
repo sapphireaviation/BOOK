@@ -48,6 +48,31 @@
   --shadow-float: 0 8px 24px -12px rgb(14 26 43 / 0.35), 0 1px 2px rgb(14 26 43 / 0.06);
 
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Pickers open in response to the user only. Reduced motion is handled in the base layer. */
+  --animate-pop-in: pop-in 160ms var(--ease-out);
+  --animate-sheet-up: sheet-up 200ms var(--ease-out);
+  --animate-fade-in: fade-in 160ms var(--ease-out);
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
 }
 
 @layer base {

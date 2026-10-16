@@ -14,6 +14,8 @@ export type ParseOptions = {
   resolvers?: Resolvers;
   /** Set to false to skip the model even when a key is configured. */
   useModel?: boolean;
+  /** Read the sentence as this kind of trip, when the person already said which. */
+  kind?: "flight" | "stay";
 };
 
 /**
@@ -33,12 +35,13 @@ export async function parseTripQuery(text: string, opts: ParseOptions = {}): Pro
     try {
       const { intentFromModel } = await import("./llm");
       const intent = await intentFromModel(input, { today, defaultCurrency });
-      if (intent) return await finishIntent(intent, { today, defaultCurrency, resolvers, source: "ai" });
+      if (intent) return await finishIntent(opts.kind ? { ...intent, kind: opts.kind } : intent, { today, defaultCurrency, resolvers, source: "ai" });
     } catch (err) {
       console.warn("[parse-query] model parse failed, using rules:", err instanceof Error ? err.message : err);
     }
   }
 
   const intent = extractIntent(input, { today, defaultCurrency });
+  if (opts.kind) intent.kind = opts.kind;
   return finishIntent(intent, { today, defaultCurrency, resolvers, source: "rules" });
 }

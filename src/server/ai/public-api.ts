@@ -33,7 +33,10 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: 400 | 40
 const FEE_NOTE = "Prices are what the airline or owner charges. There is no platform fee.";
 
 function issuesOf(err: z.ZodError) {
-  return err.issues.map((i) => ({ field: i.path.join(".") || "query", message: i.message }));
+  return err.issues.map((i) => ({
+    field: i.path.join(".") || "query",
+    message: i.code === "invalid_type" && /received undefined/.test(i.message) ? "This field is required." : i.message,
+  }));
 }
 
 /** Drops empty values so explicit parameters only override what was actually given. */

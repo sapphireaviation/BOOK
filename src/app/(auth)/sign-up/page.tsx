@@ -7,7 +7,7 @@ import { FormSkeleton } from "../_components/form-skeleton";
 
 export const metadata: Metadata = {
   title: "Create an account",
-  description: `Create a free ${site.name} account to book flights and stays with no platform fee, keep your trips in one place and list your own property.`,
+  description: `Create a free ${site.name} account to book flights and stays with no platform fee, keep all your trips in one place and list your own property for free.`,
   alternates: { canonical: "/sign-up" },
   robots: { index: false, follow: true },
 };

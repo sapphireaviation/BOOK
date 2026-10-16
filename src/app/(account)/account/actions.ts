@@ -9,7 +9,13 @@ import { account, bookings, flightBookings, hostProfiles, listings, reviews, ses
 import { auth, AuthError, requireUser } from "@/server/auth";
 import { clientIp, consume, policies } from "@/server/rate-limit";
 
-export type ActionState = { ok: boolean; message: string | null; fieldErrors?: Record<string, string> };
+export type ActionState = {
+  ok: boolean;
+  message: string | null;
+  fieldErrors?: Record<string, string>;
+  /** What the person submitted, so the form shows it again after React resets it. */
+  values?: Record<string, string>;
+};
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Enter the name you travel under.").max(80, "Use at most 80 characters."),
@@ -33,19 +39,20 @@ async function signedIn() {
 
 export async function updateProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await signedIn();
-  const parsed = profileSchema.safeParse({ name: formData.get("name") ?? "", phone: formData.get("phone") ?? "" });
+  const values = { name: String(formData.get("name") ?? ""), phone: String(formData.get("phone") ?? "") };
+  const parsed = profileSchema.safeParse(values);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0])] ??= issue.message;
-    return { ok: false, message: null, fieldErrors };
+    return { ok: false, message: null, fieldErrors, values };
   }
   try {
     // Through Better Auth so the cached session cookie picks up the new name.
     await auth.api.updateUser({ headers: await headers(), body: { name: parsed.data.name, phone: parsed.data.phone } });
-    return { ok: true, message: "Profile saved." };
+    return { ok: true, message: "Profile saved.", values: { name: parsed.data.name, phone: parsed.data.phone ?? "" } };
   } catch (err) {
     console.error("[account] updateProfile failed:", err);
-    return { ok: false, message: "We could not save your profile. Try again in a minute." };
+    return { ok: false, message: "We could not save your profile. Try again in a minute.", values };
   }
 }
 

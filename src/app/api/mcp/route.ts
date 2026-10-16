@@ -3,6 +3,7 @@ import { z } from "zod";
 import { site } from "@/config/site";
 import { amenityKeys } from "@/lib/amenities";
 import { cabinClasses } from "@/lib/search-params";
+import { mcpInstructions, mcpTools } from "@/server/ai/mcp-info";
 import { getListingPublicApi, getOfferPublic, parseTripPublic, searchFlightsPublic, searchStaysPublic } from "@/server/ai/public-api";
 import { clientIp, consume, policies, rateLimitHeaders } from "@/server/rate-limit";
 
@@ -12,12 +13,6 @@ import { clientIp, consume, policies, rateLimitHeaders } from "@/server/rate-lim
  */
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
-const instructions = [
-  `${site.name} sells flights at the airline's own fare and stays at the owner's own price, with no platform fee for anyone.`,
-  "Use search_flights or search_stays with structured filters when you know the details, or parse_trip_request to turn the person's own sentence into filters and see what is missing.",
-  "Prices are integers in minor units (paise for INR, cents for USD) next to a currency code, plus a formatted text version.",
-  "Always give the person the url or bookUrl from the result so they can book on the site. Bookings and payments happen on the website, not through these tools.",
-].join(" ");
 
 type Result = { ok: true; data: unknown } | { ok: false; status: number; error: { message: string } & Record<string, unknown> };
 
@@ -31,9 +26,7 @@ const mcp = createMcpHandler(
     server.registerTool(
       "search_stays",
       {
-        title: "Search stays",
-        description:
-          "Find places to stay (hotels, homestays, villas, apartments, hostels) listed directly by their owners, with live prices for the dates. Returns up to 20 stays per page with nightly and total price, rating, amenities and a url to book. Either pass `q` with the traveler's own words, or pass place and dates; explicit fields override what `q` implies.",
+        ...mcpTools.search_stays,
         inputSchema: z.object({
           q: z.string().max(500).optional().describe("The traveler's request in their own words, e.g. 'villa in north goa next weekend for 4 under 6000 a night with pool'."),
           place: z.string().max(120).optional().describe("Destination slug or name, e.g. 'goa', 'manali', 'south delhi'."),
@@ -60,9 +53,7 @@ const mcp = createMcpHandler(
     server.registerTool(
       "search_flights",
       {
-        title: "Search flights",
-        description:
-          "Search airline fares sold directly by the airlines, at the airline's own price with no markup. Returns offers with total price, times, stops, baggage and refund conditions, and a bookUrl. Use IATA airport codes (DEL, BOM, GOI); call parse_trip_request first if you only have city names. One way unless `return` is set.",
+        ...mcpTools.search_flights,
         inputSchema: z.object({
           q: z.string().max(500).optional().describe("The traveler's request in their own words, e.g. 'delhi to goa next friday back sunday, 2 adults'."),
           from: z.string().length(3).optional().describe("Departure airport IATA code, e.g. DEL."),
@@ -88,9 +79,7 @@ const mcp = createMcpHandler(
     server.registerTool(
       "get_listing",
       {
-        title: "Get a stay",
-        description:
-          "Full details of one stay by its slug (the last part of its url): description, rooms, amenities, check in times, cancellation policy, rating and photos. Pass dates to get a url that opens with those dates selected.",
+        ...mcpTools.get_listing,
         inputSchema: z.object({
           slug: z.string().min(1).max(120).describe("Listing slug from a search result url, e.g. 'sea-breeze-villa-candolim'."),
           checkin: isoDate.optional(),
@@ -106,8 +95,7 @@ const mcp = createMcpHandler(
     server.registerTool(
       "get_flight_offer",
       {
-        title: "Check a fare",
-        description: "Re-check one flight offer by id from search_flights: current price, conditions and expiry. Use it before sending the person to book.",
+        ...mcpTools.get_flight_offer,
         inputSchema: z.object({ offerId: z.string().min(4).max(100).describe("The id of an offer returned by search_flights.") }),
         annotations: { readOnlyHint: true, openWorldHint: true },
       },
@@ -117,16 +105,14 @@ const mcp = createMcpHandler(
     server.registerTool(
       "parse_trip_request",
       {
-        title: "Read a trip request",
-        description:
-          "Turn a sentence such as 'family of four in goa next weekend under 5000 a night with pool' into structured flight or stay filters. Returns what was understood, which fields are still missing, and a searchUrl when nothing is missing. Dates are resolved against today's date in India.",
+        ...mcpTools.parse_trip_request,
         inputSchema: z.object({ text: z.string().min(2).max(500).describe("The traveler's request in their own words.") }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
       async ({ text }) => toolResult({ ok: true, data: await parseTripPublic(text) }),
     );
   },
-  { serverInfo: { name: site.name, version: "1.0.0" }, instructions },
+  { serverInfo: { name: site.name, version: "1.0.0" }, instructions: mcpInstructions },
 );
 
 async function handler(req: Request) {

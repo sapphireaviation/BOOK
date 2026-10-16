@@ -7,7 +7,7 @@ import { FormSkeleton } from "../_components/form-skeleton";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: `Sign in to ${site.name} to see your trips, manage bookings and save stays. Use your password, a one time email link or your Google account.`,
+  description: `Sign in to ${site.name} to see your trips, manage bookings and save stays. Use your password, a one time link sent to your email, or your Google account.`,
   alternates: { canonical: "/sign-in" },
   robots: { index: false, follow: true },
 };

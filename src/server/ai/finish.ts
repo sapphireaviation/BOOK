@@ -24,6 +24,8 @@ export type ParsedTrip = {
   understood: string[];
   /** Fields still needed before a search can run. */
   missing: MissingField[];
+  /** Length of stay or trip when given without an end date ("for 3 nights"). */
+  nights?: number;
   source: "rules" | "ai";
 };
 
@@ -95,7 +97,7 @@ function titleCase(s: string) {
   return s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
-async function resolveAirport(q: string, resolvers: Resolvers): Promise<AirportMatch | undefined> {
+export async function resolveAirport(q: string, resolvers: Resolvers): Promise<AirportMatch | undefined> {
   const query = q.trim();
   const upper = query.toUpperCase();
   if (/^[A-Za-z]{3}$/.test(query) && IATA_INDEX.has(upper)) return IATA_INDEX.get(upper);
@@ -113,7 +115,7 @@ async function resolveAirport(q: string, resolvers: Resolvers): Promise<AirportM
   return KNOWN_AIRPORTS[query.toLowerCase()];
 }
 
-async function resolvePlace(q: string, resolvers: Resolvers): Promise<PlaceMatch> {
+export async function resolvePlace(q: string, resolvers: Resolvers): Promise<PlaceMatch> {
   try {
     const found = await resolvers.places(q);
     const lower = q.toLowerCase();
@@ -220,7 +222,7 @@ export async function finishIntent(
       flight.sort = "depart";
       understood.push("Earliest first");
     }
-    return { kind: "flight", flight, understood, missing, source: opts.source };
+    return { kind: "flight", flight, understood, missing, nights: intent.nights, source: opts.source };
   }
 
   if (intent.kind === "stay" || (intent.kind === "unknown" && intent.destination && !intent.origin && (start || intent.nights))) {
@@ -297,7 +299,7 @@ export async function finishIntent(
       stay.sort = "rating";
       understood.push("Best rated first");
     }
-    return { kind: "stay", stay, understood, missing, source: opts.source };
+    return { kind: "stay", stay, understood, missing, nights: intent.nights, source: opts.source };
   }
 
   // Not sure yet whether this is a flight or a stay. Keep what we can and ask.

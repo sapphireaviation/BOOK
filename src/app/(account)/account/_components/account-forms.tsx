@@ -15,13 +15,13 @@ export function ProfileForm({ name, phone, email }: { name: string; phone: strin
     <form action={action} noValidate className="space-y-4">
       {state.message && <Notice tone={state.ok ? "good" : "bad"}>{state.message}</Notice>}
       <Field label="Full name" hint="As on your ID, so airline tickets match." error={state.fieldErrors?.name}>
-        {(p) => <Input {...p} name="name" autoComplete="name" defaultValue={name} required />}
+        {(p) => <Input {...p} name="name" autoComplete="name" defaultValue={state.values?.name ?? name} required />}
       </Field>
       <Field label="Email" hint="Write to support to change the email on your account.">
         {(p) => <Input {...p} type="email" value={email} readOnly disabled />}
       </Field>
       <Field label="Phone" hint="Hosts and airlines use it if your plans change. Include the country code." error={state.fieldErrors?.phone}>
-        {(p) => <Input {...p} name="phone" type="tel" autoComplete="tel" inputMode="tel" defaultValue={phone ?? ""} placeholder="+91 98765 43210" />}
+        {(p) => <Input {...p} name="phone" type="tel" autoComplete="tel" inputMode="tel" defaultValue={state.values?.phone ?? phone ?? ""} placeholder="+91 98765 43210" />}
       </Field>
       <Button type="submit" pending={pending}>
         Save profile
@@ -89,9 +89,11 @@ export function DeleteAccountForm({ email }: { email: string }) {
 
   if (!open) {
     return (
-      <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
-        Delete my account
-      </Button>
+      <div>
+        <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
+          Delete my account
+        </Button>
+      </div>
     );
   }
 

@@ -88,14 +88,16 @@ export default async function HostBookingPage({ params }: PageProps<"/host/booki
           </div>
           <div className="rounded-md border border-line bg-surface p-4 text-sm">
             <div className="flex justify-between gap-4">
-              <span className="font-semibold">Owed to you</span>
+              <span className="font-semibold">{b.payoutStatus === "paid" ? "Paid to you" : b.payoutStatus === "cancelled" ? "Payout" : "Owed to you"}</span>
               <Price className="font-bold" money={{ amount: owed, currency: b.currency }} />
             </div>
             <p className="mt-1 text-slate">
               {b.payoutStatus === "paid" && b.payoutPaidAt
                 ? `Paid on ${formatDate(b.payoutPaidAt)}.`
                 : b.payoutStatus
-                  ? `${humanStatus(b.payoutStatus)}${b.payoutReleaseOn ? `, released from ${formatDay(b.payoutReleaseOn)}` : ""}.`
+                  ? b.payoutReleaseOn && (b.payoutStatus === "owed" || b.payoutStatus === "scheduled")
+                    ? `We send it on or after ${formatDay(b.payoutReleaseOn)}, the day after check in.`
+                    : `${humanStatus(b.payoutStatus)}.`
                   : b.status === "confirmed"
                     ? "Paid out after the guest checks in."
                     : "No payout for this booking."}

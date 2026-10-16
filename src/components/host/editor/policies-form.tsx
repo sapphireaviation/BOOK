@@ -36,7 +36,7 @@ export function PoliciesForm({ listingId, currency, values }: { listingId: strin
           name="instantBook"
           label="Guests can book instantly"
           defaultChecked={values.instantBook}
-          hint="Turn this off if you want to approve each booking yourself."
+          hint="Approving bookings one by one is not available yet. Every paid booking is confirmed straight away, and turning this off only changes the label guests see."
         />
       </FormSection>
 

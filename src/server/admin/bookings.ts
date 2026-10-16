@@ -2,7 +2,7 @@ import "server-only";
 import { and, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { bookings, flightBookings, listings, listingUnits, payments, payouts, refunds, stayBookings } from "@/db/schema";
+import { bookings, flightBookings, listings, listingUnits, payments, payouts, refunds, stayBookings, user } from "@/db/schema";
 import { cancelBooking, type CancelResult } from "@/server/bookings/cancel";
 import { AccessError } from "@/server/host/access";
 import type { Actor } from "@/server/host/rules";
@@ -67,7 +67,7 @@ export function escapeLike(s: string) {
 export async function getBookingForAdmin(bookingId: string) {
   const [b] = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
   if (!b) throw new AccessError("not_found", "No booking with that id.");
-  const [stay, flight, pays, refs, payout] = await Promise.all([
+  const [stay, flight, pays, refs, payout, account] = await Promise.all([
     db
       .select({
         listingId: stayBookings.listingId,
@@ -109,8 +109,22 @@ export async function getBookingForAdmin(bookingId: string) {
       .from(payouts)
       .where(eq(payouts.bookingId, bookingId))
       .then((r) => r[0] ?? null),
+    b.userId
+      ? db
+          .select({ email: user.email })
+          .from(user)
+          .where(eq(user.id, b.userId))
+          .then((r) => r[0] ?? null)
+      : null,
   ]);
-  return { booking: b, stay, flight, payments: pays, refunds: refs, payout };
+  const host = stay
+    ? await db
+        .select({ name: user.name, email: user.email })
+        .from(user)
+        .where(eq(user.id, stay.hostId))
+        .then((r) => r[0] ?? null)
+    : null;
+  return { booking: b, stay, flight, payments: pays, refunds: refs, payout, account, host };
 }
 
 export const CANCELLABLE = ["pending_payment", "confirmed"] as const;
